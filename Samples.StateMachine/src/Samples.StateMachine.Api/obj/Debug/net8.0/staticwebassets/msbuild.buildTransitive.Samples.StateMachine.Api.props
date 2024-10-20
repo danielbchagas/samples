@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Samples.StateMachine.Api.props" />
+</Project>

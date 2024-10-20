@@ -1,0 +1,6 @@
+@StateMachine_HostAddress = http://localhost:5163
+
+GET {{StateMachine_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,9 @@
+﻿namespace Samples.StateMachine.Infrastructure.Services.BasicMachine.Events;
+
+public class OrderCreatedEvent
+{
+    public Guid OrderId { get; set; }
+    public string OrderName { get; set; }
+    public string OrderDescription { get; set; }
+    public decimal OrderAmount { get; set; }
+}

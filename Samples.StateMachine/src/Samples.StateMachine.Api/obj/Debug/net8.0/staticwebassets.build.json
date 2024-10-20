@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "zhY2jJ241GZFyVtFSQU52zBSmoYE2rgSGBVwmYnOHWE=",
+  "Source": "Samples.StateMachine.Api",
+  "BasePath": "_content/Samples.StateMachine.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

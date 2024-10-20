@@ -1,0 +1,15 @@
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\bin\Debug\net8.0\StateMachine.Infrastructure.deps.json
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\bin\Debug\net8.0\StateMachine.Infrastructure.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\bin\Debug\net8.0\StateMachine.Infrastructure.pdb
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.csproj.AssemblyReference.cache
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.AssemblyInfoInputs.cache
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.AssemblyInfo.cs
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\refint\StateMachine.Infrastructure.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMachine.Infrastructure.pdb
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\ref\StateMachine.Infrastructure.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\bin\Debug\net8.0\StateMachine.Domain.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\bin\Debug\net8.0\StateMachine.Domain.pdb
+D:\Workspace\StateMachine\StateMachine\StateMachine.Infrastructure\obj\Debug\net8.0\StateMac.D0D44C09.Up2Date

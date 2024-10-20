@@ -1,0 +1,11 @@
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\bin\Debug\net8.0\StateMachine.Domain.deps.json
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\bin\Debug\net8.0\StateMachine.Domain.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\bin\Debug\net8.0\StateMachine.Domain.pdb
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.AssemblyInfoInputs.cache
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.AssemblyInfo.cs
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.csproj.CoreCompileInputs.cache
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\refint\StateMachine.Domain.dll
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\StateMachine.Domain.pdb
+D:\Workspace\StateMachine\StateMachine\StateMachine.Domain\obj\Debug\net8.0\ref\StateMachine.Domain.dll
