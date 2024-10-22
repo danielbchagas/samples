@@ -13,7 +13,7 @@ public static class MasstransitExtension
     public static IServiceCollection AddMasstransit(this IServiceCollection services)
     {
         services.AddDbContext<OrderStateDbContext>(options =>
-            options.UseNpgsql("YourConnectionString"));
+            options.UseNpgsql("User ID=postgres;Password=mysecretpassword;Host=localhost;Port=5432;Database=state_machine;Pooling=true;"));
         
         services.AddMassTransit(cfg =>
         {
