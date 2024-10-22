@@ -20,15 +20,3 @@ D:\Workspace\StateMachine\StateMachine\src\Samples.StateMachine.Domain\obj\Debug
 D:\Workspace\StateMachine\StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\refint\Samples.StateMachine.Domain.dll
 D:\Workspace\StateMachine\StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.pdb
 D:\Workspace\StateMachine\StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\ref\Samples.StateMachine.Domain.dll
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\bin\Debug\net8.0\Samples.StateMachine.Domain.deps.json
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\bin\Debug\net8.0\Samples.StateMachine.Domain.dll
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\bin\Debug\net8.0\Samples.StateMachine.Domain.pdb
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.GeneratedMSBuildEditorConfig.editorconfig
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.AssemblyInfoInputs.cache
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.AssemblyInfo.cs
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.csproj.CoreCompileInputs.cache
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.sourcelink.json
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.dll
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\refint\Samples.StateMachine.Domain.dll
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\Samples.StateMachine.Domain.pdb
-D:\Workspace\samples\Samples.StateMachine\src\Samples.StateMachine.Domain\obj\Debug\net8.0\ref\Samples.StateMachine.Domain.dll

@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Samples.StateMachine.Api.props" />
-</Project>
