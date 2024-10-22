@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "InvSv/Pp2HA=",
+  "dgSpecHash": "cq0aOD3eTF0=",
   "success": true,
-  "projectFilePath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
+  "projectFilePath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Daniel.DESKTOP-CS5281Q\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Daniel.DESKTOP-CS5281Q\\.nuget\\packages\\masstransit\\8.2.5\\masstransit.8.2.5.nupkg.sha512",

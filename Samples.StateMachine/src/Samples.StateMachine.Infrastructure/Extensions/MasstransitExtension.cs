@@ -23,11 +23,11 @@ public static class MasstransitExtension
                     
                     r.AddDbContext<DbContext, OrderStateDbContext>((provider, builder) =>
                     {
-                        builder.UseNpgsql("User ID=postgres;Password=mysecretpassword;Host=localhost;Port=5432;Database=state_machine;Pooling=true;Connection Lifetime=0;",
-                            m =>
+                        builder.UseNpgsql("User ID=postgres;Password=mysecretpassword;Host=localhost;Port=5432;Database=state_machine;Pooling=true;",
+                            npgsqlOptions =>
                             {
-                                m.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
-                                m.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
+                                npgsqlOptions.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
+                                npgsqlOptions.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
                             });
                     });
                     

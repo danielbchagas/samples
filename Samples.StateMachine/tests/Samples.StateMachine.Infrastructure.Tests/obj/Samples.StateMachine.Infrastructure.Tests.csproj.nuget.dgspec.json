@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Workspace\\StateMachine\\StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj": {}
+    "D:\\Workspace\\samples\\Samples.StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj": {}
   },
   "projects": {
-    "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj": {
+    "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj",
+        "projectUniqueName": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj",
         "projectName": "Samples.StateMachine.Domain",
-        "projectPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj",
+        "projectPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj",
         "packagesPath": "C:\\Users\\Daniel.DESKTOP-CS5281Q\\.nuget\\packages\\",
-        "outputPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\obj\\",
+        "outputPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -69,14 +69,14 @@
         }
       }
     },
-    "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj": {
+    "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
         "projectName": "Samples.StateMachine.Infrastructure",
-        "projectPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
+        "projectPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\Daniel.DESKTOP-CS5281Q\\.nuget\\packages\\",
-        "outputPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\obj\\",
+        "outputPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -98,8 +98,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj": {
-                "projectPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj"
+              "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj": {
+                "projectPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Domain\\Samples.StateMachine.Domain.csproj"
               }
             }
           }
@@ -166,14 +166,14 @@
         }
       }
     },
-    "D:\\Workspace\\StateMachine\\StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj": {
+    "D:\\Workspace\\samples\\Samples.StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Workspace\\StateMachine\\StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj",
+        "projectUniqueName": "D:\\Workspace\\samples\\Samples.StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj",
         "projectName": "Samples.StateMachine.Infrastructure.Tests",
-        "projectPath": "D:\\Workspace\\StateMachine\\StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj",
+        "projectPath": "D:\\Workspace\\samples\\Samples.StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\Samples.StateMachine.Infrastructure.Tests.csproj",
         "packagesPath": "C:\\Users\\Daniel.DESKTOP-CS5281Q\\.nuget\\packages\\",
-        "outputPath": "D:\\Workspace\\StateMachine\\StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\obj\\",
+        "outputPath": "D:\\Workspace\\samples\\Samples.StateMachine\\tests\\Samples.StateMachine.Infrastructure.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -195,8 +195,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj": {
-                "projectPath": "D:\\Workspace\\StateMachine\\StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj"
+              "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj": {
+                "projectPath": "D:\\Workspace\\samples\\Samples.StateMachine\\src\\Samples.StateMachine.Infrastructure\\Samples.StateMachine.Infrastructure.csproj"
               }
             }
           }
