@@ -12,6 +12,9 @@ public static class MasstransitExtension
 {
     public static IServiceCollection AddMasstransit(this IServiceCollection services)
     {
+        services.AddDbContext<OrderStateDbContext>(options =>
+            options.UseNpgsql("YourConnectionString"));
+        
         services.AddMassTransit(cfg =>
         {
             cfg.AddConsumer<OrderSubmittedConsumer>();
@@ -35,21 +38,21 @@ public static class MasstransitExtension
                 });
                 // .InMemoryRepository();
                 
-            // cfg.UsingInMemory((context, cfg) =>
-            // {
-            //     cfg.ConfigureEndpoints(context);
-            // });
-                
-            cfg.UsingRabbitMq((context, cfg) =>
+            cfg.UsingInMemory((context, cfg) =>
             {
-                cfg.Host("localhost", "/", h =>
-                {
-                    h.Username("user");
-                    h.Password("password");
-                });
-
                 cfg.ConfigureEndpoints(context);
             });
+                
+            // cfg.UsingRabbitMq((context, cfg) =>
+            // {
+            //     cfg.Host("localhost", "/", h =>
+            //     {
+            //         h.Username("user");
+            //         h.Password("password");
+            //     });
+            //
+            //     cfg.ConfigureEndpoints(context);
+            // });
                 
             // cfg.AddRider(rider =>
             // {
