@@ -54,8 +54,16 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         #region Shipping
 
         During(Submitted,
-            When(ShippingSubmitted)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+            When(PaymentAccepted)
+                .ThenAsync(context =>
+                {
+                    context.Saga.CorrelationId = context.Message.CorrelationId;
+                    
+                    return context.Publish(new Domain.Events.Shipping.Submitted()
+                    {
+                        CorrelationId = context.Message.CorrelationId
+                    });
+                })
                 .TransitionTo(Accepted)
         );
         
