@@ -21,6 +21,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
     public OrderStateMachine()
     {
+        InstanceState(x => x.CurrentState);
+        
         #region Payment
 
         Initially(
