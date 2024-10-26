@@ -1,0 +1,35 @@
+POST {{name}}/payment/submit?correlationId=e2d1251b-af2d-4e57-8536-f9ebde66f4a7
+Accept: application/json
+Content-Type: application/json
+
+{
+  "date": "e2d1251b-af2d-4e57-8536-f9ebde66f4a7"
+}
+###
+
+POST {{name}}/accept/submit?correlationId=e2d1251b-af2d-4e57-8536-f9ebde66f4a7
+Accept: application/json
+Content-Type: application/json
+
+{
+  "date": "e2d1251b-af2d-4e57-8536-f9ebde66f4a7"
+}
+###
+
+POST {{name}}/cancel/submit?correlationId=e2d1251b-af2d-4e57-8536-f9ebde66f4a7
+Accept: application/json
+Content-Type: application/json
+
+{
+  "date": "e2d1251b-af2d-4e57-8536-f9ebde66f4a7"
+}
+###
+
+POST {{name}}/rollback/submit?correlationId=e2d1251b-af2d-4e57-8536-f9ebde66f4a7
+Accept: application/json
+Content-Type: application/json
+
+{
+  "date": "e2d1251b-af2d-4e57-8536-f9ebde66f4a7"
+}
+###
