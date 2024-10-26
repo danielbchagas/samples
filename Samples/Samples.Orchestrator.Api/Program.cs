@@ -1,7 +1,7 @@
 using MassTransit;
-using Samples.Orchestrator;
-using Samples.Orchestrator.Domain.Events.Payment;
-using Samples.Orchestrator.Infrastructure.Extensions;
+using Samples.Orchestrator.Api;
+using Samples.Orchestrator.Api.Domain.Events.Payment;
+using Samples.Orchestrator.Api.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

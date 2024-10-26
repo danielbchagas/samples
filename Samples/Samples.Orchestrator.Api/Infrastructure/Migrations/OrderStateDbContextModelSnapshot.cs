@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Samples.Orchestrator.Infrastructure.Database;
+using Samples.Orchestrator.Api.Infrastructure.Database;
 
 #nullable disable
 
-namespace Samples.Orchestrator.Infrastructure.Migrations
+namespace Samples.Orchestrator.Api.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderStateDbContext))]
     partial class OrderStateDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace Samples.Orchestrator.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Samples.Orchestrator.Infrastructure.StateMachine.OrderState", b =>
+            modelBuilder.Entity("Samples.Orchestrator.Api.Infrastructure.StateMachine.OrderState", b =>
                 {
                     b.Property<Guid>("CorrelationId")
                         .HasColumnType("uuid");

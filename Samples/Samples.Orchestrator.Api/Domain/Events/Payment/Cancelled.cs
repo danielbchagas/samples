@@ -1,4 +1,4 @@
-﻿namespace Samples.Orchestrator.Domain.Events.Payment;
+﻿namespace Samples.Orchestrator.Api.Domain.Events.Payment;
 
 public class Cancelled
 {

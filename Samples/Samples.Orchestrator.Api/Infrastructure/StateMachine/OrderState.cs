@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 
-namespace Samples.Orchestrator.Infrastructure.StateMachine;
+namespace Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
 public class OrderState : SagaStateMachineInstance
 {

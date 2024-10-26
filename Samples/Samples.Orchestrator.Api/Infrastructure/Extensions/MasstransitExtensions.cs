@@ -2,10 +2,10 @@
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
-using Samples.Orchestrator.Infrastructure.Database;
-using Samples.Orchestrator.Infrastructure.StateMachine;
+using Samples.Orchestrator.Api.Infrastructure.Database;
+using Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
-namespace Samples.Orchestrator.Infrastructure.Extensions;
+namespace Samples.Orchestrator.Api.Infrastructure.Extensions;
 
 public static class MasstransitExtensions
 {

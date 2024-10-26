@@ -1,4 +1,4 @@
-﻿namespace Samples.Orchestrator.Domain.Events.Shipping;
+﻿namespace Samples.Orchestrator.Api.Domain.Events.Payment;
 
 public class Submitted
 {

@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Samples.Orchestrator\Samples.Orchestrator.csproj" />
+      <ProjectReference Include="..\Samples.Orchestrator.Api\Samples.Orchestrator.Api.csproj" />
     </ItemGroup>
 
 </Project>
