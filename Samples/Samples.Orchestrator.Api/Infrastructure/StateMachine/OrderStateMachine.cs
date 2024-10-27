@@ -25,13 +25,13 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         InstanceState(x => x.CurrentState);
 
         Initially(
-            When(PaymentSubmitted)
+When(PaymentSubmitted)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Submitted)
         );
 
         During(Submitted,
-            When(PaymentAccepted)
+When(PaymentAccepted)
                 .ThenAsync(async context =>
                 {
                     context.Saga.CorrelationId = context.Message.CorrelationId;
@@ -44,31 +44,31 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         );
 
         During(ReadyForShipping,
-            When(ShippingAccepted)
+When(ShippingAccepted)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Accepted)
         );
 
         During(Submitted,
-            When(PaymentCancelled)
+When(PaymentCancelled)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Cancelled)
         );
 
         During(Submitted,
-            When(PaymentRollback)
+When(PaymentRollback)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Rollback)
         );
 
         During(ReadyForShipping,
-            When(ShippingCancelled)
+When(ShippingCancelled)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Cancelled)
         );
 
         During(ReadyForShipping,
-            When(ShippingRollback)
+When(ShippingRollback)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(Rollback)
         );
