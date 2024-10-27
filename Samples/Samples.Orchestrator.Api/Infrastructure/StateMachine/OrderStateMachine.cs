@@ -4,34 +4,72 @@ namespace Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
-    public State Submitted { get; private set; }
-    public State ReadyForShipping { get; private set; }
-    public State Accepted { get; private set; }
-    public State Cancelled { get; private set; }
-    public State Rollback { get; private set; }
+    public State PaymentSubmitted { get; private set; }
+    public State PaymentAccepted { get; private set; }
+    public State PaymentCancelled { get; private set; }
+    public State PaymentRollback { get; private set; }
+    
+    public State ShippingSubmitted { get; private set; }
+    public State ShippingAccepted { get; private set; }
+    public State ShippingCancelled { get; private set; }
+    public State ShippingRollback { get; private set; }
 
-    public Event<Domain.Events.Payment.Submitted> PaymentSubmitted { get; private set; }
-    public Event<Domain.Events.Payment.Accepted> PaymentAccepted { get; private set; }
-    public Event<Domain.Events.Payment.Cancelled> PaymentCancelled { get; private set; }
-    public Event<Domain.Events.Payment.Rollback> PaymentRollback { get; private set; }
+    public Event<Domain.Events.Payment.Submitted> PaymentSubmittedState { get; private set; }
+    public Event<Domain.Events.Payment.Accepted> PaymentAcceptedState { get; private set; }
+    public Event<Domain.Events.Payment.Cancelled> PaymentCancelledState { get; private set; }
+    public Event<Domain.Events.Payment.Rollback> PaymentRollbackState { get; private set; }
 
-    public Event<Domain.Events.Shipping.Submitted> ShippingSubmitted { get; private set; }
-    public Event<Domain.Events.Shipping.Accepted> ShippingAccepted { get; private set; }
-    public Event<Domain.Events.Shipping.Cancelled> ShippingCancelled { get; private set; }
-    public Event<Domain.Events.Shipping.Rollback> ShippingRollback { get; private set; }
+    public Event<Domain.Events.Shipping.Submitted> ShippingSubmittedState { get; private set; }
+    public Event<Domain.Events.Shipping.Accepted> ShippingAcceptedState { get; private set; }
+    public Event<Domain.Events.Shipping.Cancelled> ShippingCancelledState { get; private set; }
+    public Event<Domain.Events.Shipping.Rollback> ShippingRollbackState { get; private set; }
 
     public OrderStateMachine()
     {
         InstanceState(x => x.CurrentState);
 
         Initially(
-When(PaymentSubmitted)
+When(PaymentSubmittedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Submitted)
+                .TransitionTo(PaymentSubmitted)
         );
 
-        During(Submitted,
-When(PaymentAccepted)
+        During(PaymentSubmitted,
+When(PaymentAcceptedState)
+                .TransitionTo(PaymentAccepted)
+        );
+        
+        During(PaymentSubmitted,
+When(PaymentCancelledState)
+                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .TransitionTo(PaymentCancelled)
+        );
+
+        During(PaymentSubmitted,
+When(PaymentRollbackState)
+                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .TransitionTo(PaymentRollback)
+        );
+
+        During(PaymentAccepted,
+When(PaymentCancelledState)
+                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .TransitionTo(PaymentCancelled)
+        );
+
+        During(PaymentCancelled,
+When(PaymentRollbackState)
+                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .TransitionTo(PaymentRollback)
+        );
+        
+        During(PaymentSubmitted,
+When(PaymentSubmittedState)
+                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .Finalize());
+
+        During(PaymentSubmitted,
+When(PaymentAcceptedState)
                 .ThenAsync(async context =>
                 {
                     context.Saga.CorrelationId = context.Message.CorrelationId;
@@ -39,38 +77,31 @@ When(PaymentAccepted)
                     {
                         CorrelationId = context.Message.CorrelationId
                     });
-                })
-                .TransitionTo(ReadyForShipping)
-        );
+                }).TransitionTo(ShippingSubmitted));
 
-        During(ReadyForShipping,
-When(ShippingAccepted)
+        During(ShippingSubmitted,
+When(ShippingSubmittedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Accepted)
-        );
-
-        During(Submitted,
-When(PaymentCancelled)
+                .TransitionTo(ShippingSubmitted));
+        
+        During(ShippingSubmitted,
+When(ShippingAcceptedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Cancelled)
-        );
-
-        During(Submitted,
-When(PaymentRollback)
+                .TransitionTo(ShippingAccepted));
+        
+        During(ShippingAccepted,
+When(ShippingCancelledState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Rollback)
-        );
-
-        During(ReadyForShipping,
-When(ShippingCancelled)
+                .TransitionTo(ShippingCancelled));
+        
+        During(ShippingCancelled,
+When(ShippingRollbackState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Cancelled)
-        );
-
-        During(ReadyForShipping,
-When(ShippingRollback)
+                .TransitionTo(ShippingRollback));
+        
+        During(ShippingRollback,
+When(ShippingRollbackState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(Rollback)
-        );
+                .Finalize());
     }
 }
