@@ -3,4 +3,5 @@
 public class Rollback
 {
     public Guid CorrelationId { get; set; }
+    public required string Code { get; set; }
 }

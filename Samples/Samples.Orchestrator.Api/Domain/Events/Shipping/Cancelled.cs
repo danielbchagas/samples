@@ -3,4 +3,5 @@
 public class Cancelled
 {
     public Guid CorrelationId { get; set; }
+    public required string Code { get; set; }
 }

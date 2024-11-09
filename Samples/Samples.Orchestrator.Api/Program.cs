@@ -23,34 +23,34 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/payment/submit", async (IPublishEndpoint bus, Guid correlationId) =>
+app.MapPost("/payment/submit", async (IPublishEndpoint bus, Submitted request) =>
 {
-    await bus.Publish(new Submitted { CorrelationId = correlationId });
-    return Results.Accepted($"Payment submission event sent with CorrelationId: {correlationId}");
+    await bus.Publish(request);
+    return Results.Accepted($"Payment submission event sent...");
 })
 .WithName("SubmitPayment")
 .WithOpenApi();
 
-app.MapPost("/payment/accept", async (IPublishEndpoint bus, Guid correlationId) =>
+app.MapPost("/payment/accept", async (IPublishEndpoint bus, Accepted request) =>
 {
-    await bus.Publish(new Accepted { CorrelationId = correlationId });
-    return Results.Accepted($"Payment accepted event sent with CorrelationId: {correlationId}");
+    await bus.Publish(request);
+    return Results.Accepted($"Payment accepted event sent...");
 })
 .WithName("AcceptPayment")
 .WithOpenApi();
 
-app.MapPost("/payment/cancel", async (IPublishEndpoint bus, Guid correlationId) =>
+app.MapPost("/payment/cancel", async (IPublishEndpoint bus, Cancelled request) =>
 {
-    await bus.Publish(new Cancelled { CorrelationId = correlationId });
-    return Results.Accepted($"Payment cancelled event sent with CorrelationId: {correlationId}");
+    await bus.Publish(request);
+    return Results.Accepted($"Payment cancelled event sent...");
 })
 .WithName("CancelPayment")
 .WithOpenApi();
 
-app.MapPost("/payment/rollback", async (IPublishEndpoint bus, Guid correlationId) =>
+app.MapPost("/payment/rollback", async (IPublishEndpoint bus, Rollback request) =>
 {
-    await bus.Publish(new Rollback { CorrelationId = correlationId });
-    return Results.Accepted($"Payment rollback event sent with CorrelationId: {correlationId}");
+    await bus.Publish(request);
+    return Results.Accepted($"Payment rollback event sent...");
 })
 .WithName("RollbackPayment")
 .WithOpenApi();
