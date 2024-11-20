@@ -30,6 +30,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
     private void ConfigurePaymentStates()
     {
+        State(() => PaymentSubmitted);
+        
         InstanceState(x => x.CurrentState);
         
         Event(() => PaymentSubmittedState, x => x.CorrelateById(context => context.Message.CorrelationId));
