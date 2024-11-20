@@ -15,15 +15,15 @@ public static class MasstransitExtensions
         {
             opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
         });
-        
+
         services.AddMassTransit(cfg =>
         {
             cfg.AddSagaStateMachine<OrderStateMachine, OrderState>()
                 .EntityFrameworkRepository(r =>
                 {
                     r.ConcurrencyMode = ConcurrencyMode.Pessimistic;
-            
-                    r.AddDbContext<SagaDbContext, OrderStateDbContext>((provider,builder) =>
+
+                    r.AddDbContext<SagaDbContext, OrderStateDbContext>((provider, builder) =>
                     {
                         builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), m =>
                         {
@@ -31,60 +31,88 @@ public static class MasstransitExtensions
                             m.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
                         });
                     });
-                    
+
                     r.UsePostgres();
                 });
-            
-            cfg.UsingRabbitMq((context, cfg) =>
+
+            cfg.AddRider(rider =>
             {
-                cfg.Host("localhost", "/", h =>
+                rider.AddSagaStateMachine<OrderStateMachine, OrderState>();
+
+                #region Payment
+
+                rider.AddProducer<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar");
+                //rider.AddProducer<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado");
+                //rider.AddProducer<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado");
+                rider.AddProducer<Domain.Events.Payment.Rollback>("saga.pagamento.rollback");
+
+                #endregion
+
+                #region Shipping
+
+                rider.AddProducer<Domain.Events.Shipping.Submitted>("saga.envio.iniciar");
+                //rider.AddProducer<Domain.Events.Shipping.Accepted>("saga.envio.confirmado");
+                //rider.AddProducer<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado");
+                rider.AddProducer<Domain.Events.Shipping.Rollback>("saga.envio.rollback");
+
+                #endregion
+
+                rider.UsingKafka((context, k) =>
                 {
-                    h.Username("user");
-                    h.Password("password");
-                });
-                
-                cfg.ReceiveEndpoint("saga.pagamento.iniciar", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.pagamento.confirmado", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.pagamento.cancelado", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.pagamento.rollback", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.envio.iniciar", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.envio.confirmado", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("saga.envio.cancelado", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
+                    k.Host("127.0.0.1:9092");
+
+                    #region Payment
+
+                    k.TopicEndpoint<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar", "saga-pagamento-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado", "saga-pagamento-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Payment.Rollback>("saga.pagamento.rollback", "saga-pagamento-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    #endregion
+
+                    #region Shipping
+
+                    k.TopicEndpoint<Domain.Events.Shipping.Submitted>("saga.envio.iniciar", "saga-envio-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado", "saga-envio-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Domain.Events.Shipping.Rollback>("saga.envio.rollback", "saga-envio-group", e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    #endregion
                 });
 
-                cfg.ReceiveEndpoint("saga.envio.rollback", e =>
-                {
-                    e.ConfigureSaga<OrderState>(context);
-                });
             });
         });
-            
+
         return services;
     }
 }
