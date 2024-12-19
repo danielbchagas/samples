@@ -1,4 +1,4 @@
-# Nome do Projeto
+# E-Shop
 
 Exemplo de máquina de estados
 
