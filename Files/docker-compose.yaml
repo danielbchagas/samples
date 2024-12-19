@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_container
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"   # Porta para o RabbitMQ
+      - "15672:15672" # Porta para o RabbitMQ Management UI
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+    command: |
+      sh -c "
+        rabbitmq-server &
+        sleep 10 &&
+        rabbitmqadmin declare queue name=saga.pagamento.iniciar durable=true &&
+        rabbitmqadmin declare queue name=saga.pagamento.confirmado durable=true &&
+        rabbitmqadmin declare queue name=saga.pagamento.cancelado durable=true &&
+        rabbitmqadmin declare queue name=saga.pagamento.rollback durable=true &&
+        rabbitmqadmin declare queue name=saga.envio.iniciar durable=true &&
+        rabbitmqadmin declare queue name=saga.envio.confirmado durable=true &&
+        rabbitmqadmin declare queue name=saga.envio.cancelado durable=true &&
+        rabbitmqadmin declare queue name=saga.envio.rollback durable=true &&
+        tail -f /dev/null
+      "
+
+volumes:
+  pgdata:
+  rabbitmqdata:

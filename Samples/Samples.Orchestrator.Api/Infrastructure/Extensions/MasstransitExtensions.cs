@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿#define KAFKA
+
+using System.Reflection;
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
@@ -40,26 +42,38 @@ public static class MasstransitExtensions
                     r.UsePostgres();
                 });
             
+            #if RABBITMQ
+            cfg.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("localhost", 15672, "/", h =>
+                {
+                    h.Username("user");
+                    h.Password("password");
+                });
+            });
+            #endif
+            
+            #if KAFKA
             cfg.AddRider(rider =>
             {
                 rider.AddSagaStateMachine<OrderStateMachine, OrderState>();
                 
                 #region Payment
-
+            
                 rider.AddProducer<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar");
                 rider.AddProducer<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado");
                 rider.AddProducer<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado");
                 rider.AddProducer<Domain.Events.Payment.Rollback>("saga.pagamento.rollback");
-
+            
                 #endregion
-
+            
                 #region Shipping
-
+            
                 rider.AddProducer<Domain.Events.Shipping.Submitted>("saga.envio.iniciar");
                 rider.AddProducer<Domain.Events.Shipping.Accepted>("saga.envio.confirmado");
                 rider.AddProducer<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado");
                 rider.AddProducer<Domain.Events.Shipping.Rollback>("saga.envio.rollback");
-
+            
                 #endregion
                 
                 rider.UsingKafka((context, k) =>
@@ -89,9 +103,9 @@ public static class MasstransitExtensions
                     });
                     
                     #endregion
-
+                
                     #region Shipping
-
+                
                     k.TopicEndpoint<Domain.Events.Shipping.Submitted>("saga.envio.iniciar", "saga-envio-group", e =>
                     {
                         e.ConfigureSaga<OrderState>(context);
@@ -111,11 +125,11 @@ public static class MasstransitExtensions
                     {
                         e.ConfigureSaga<OrderState>(context);
                     });
-
+                
                     #endregion
-                    
                 });
             });
+            #endif
         });
             
         return services;

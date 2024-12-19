@@ -30,7 +30,14 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
         Initially(
 When(PaymentSubmittedState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .ThenAsync(async context =>
+                {
+                        context.Saga.CorrelationId = context.Message.CorrelationId;
+                        await context.Publish<Domain.Events.Payment.Submitted>(new
+                        {
+                                CorrelationId = context.Message.CorrelationId
+                        });
+                })
                 .TransitionTo(PaymentSubmitted)
         );
 
