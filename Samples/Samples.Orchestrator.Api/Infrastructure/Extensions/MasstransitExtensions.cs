@@ -84,21 +84,25 @@ public static class MasstransitExtensions
                     
                     k.TopicEndpoint<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar", "saga-pagamento-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado", "saga-pagamento-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Payment.Rollback>("saga.pagamento.rollback", "saga-pagamento-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
@@ -108,21 +112,25 @@ public static class MasstransitExtensions
                 
                     k.TopicEndpoint<Domain.Events.Shipping.Submitted>("saga.envio.iniciar", "saga-envio-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado", "saga-envio-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
                     k.TopicEndpoint<Domain.Events.Shipping.Rollback>("saga.envio.rollback", "saga-envio-group", e =>
                     {
+                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                 

@@ -73,7 +73,8 @@ When(PaymentRollbackState)
         During(PaymentSubmitted,
 When(PaymentSubmittedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .Finalize());
+                .Finalize()
+        );
 
         During(PaymentSubmitted,
 When(PaymentAcceptedState)
@@ -84,31 +85,37 @@ When(PaymentAcceptedState)
                     {
                         CorrelationId = context.Message.CorrelationId
                     });
-                }).TransitionTo(ShippingSubmitted));
+                }).TransitionTo(ShippingSubmitted)
+        );
 
         During(ShippingSubmitted,
 When(ShippingSubmittedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(ShippingSubmitted));
+                .TransitionTo(ShippingSubmitted)
+        );
         
         During(ShippingSubmitted,
 When(ShippingAcceptedState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(ShippingAccepted));
+                .TransitionTo(ShippingAccepted)
+        );
         
         During(ShippingAccepted,
 When(ShippingCancelledState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(ShippingCancelled));
+                .TransitionTo(ShippingCancelled)
+        );
         
         During(ShippingCancelled,
 When(ShippingRollbackState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(ShippingRollback));
+                .TransitionTo(ShippingRollback)
+        );
         
         During(ShippingRollback,
 When(ShippingRollbackState)
                 .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .Finalize());
+                .Finalize()
+        );
     }
 }
