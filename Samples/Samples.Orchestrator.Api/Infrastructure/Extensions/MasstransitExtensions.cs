@@ -61,8 +61,6 @@ public static class MasstransitExtensions
                 #region Payment
             
                 rider.AddProducer<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar");
-                rider.AddProducer<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado");
-                rider.AddProducer<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado");
                 rider.AddProducer<Domain.Events.Payment.Rollback>("saga.pagamento.rollback");
             
                 #endregion
@@ -70,8 +68,6 @@ public static class MasstransitExtensions
                 #region Shipping
             
                 rider.AddProducer<Domain.Events.Shipping.Submitted>("saga.envio.iniciar");
-                rider.AddProducer<Domain.Events.Shipping.Accepted>("saga.envio.confirmado");
-                rider.AddProducer<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado");
                 rider.AddProducer<Domain.Events.Shipping.Rollback>("saga.envio.rollback");
             
                 #endregion
@@ -81,12 +77,6 @@ public static class MasstransitExtensions
                     k.Host("127.0.0.1:9092");
                     
                     #region Payment
-                    
-                    k.TopicEndpoint<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar", "saga-pagamento-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
                     
                     k.TopicEndpoint<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
                     {
@@ -100,22 +90,10 @@ public static class MasstransitExtensions
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
-                    k.TopicEndpoint<Domain.Events.Payment.Rollback>("saga.pagamento.rollback", "saga-pagamento-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    
                     #endregion
                 
                     #region Shipping
                 
-                    k.TopicEndpoint<Domain.Events.Shipping.Submitted>("saga.envio.iniciar", "saga-envio-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    
                     k.TopicEndpoint<Domain.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
                     {
                         e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
@@ -128,12 +106,6 @@ public static class MasstransitExtensions
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
-                    k.TopicEndpoint<Domain.Events.Shipping.Rollback>("saga.envio.rollback", "saga-envio-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                
                     #endregion
                 });
             });
