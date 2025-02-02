@@ -1,9 +1,10 @@
-﻿#define KAFKA
+﻿#define RABBITMQ
 
 using System.Reflection;
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
+using RabbitMQ.Client;
 using Samples.Orchestrator.Api.Infrastructure.Database;
 using Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
@@ -20,11 +21,6 @@ public static class MasstransitExtensions
         
         services.AddMassTransit(cfg =>
         {
-            cfg.UsingInMemory((context, cfg) =>
-            {
-                cfg.ConfigureEndpoints(context); 
-            });
-            
             cfg.AddSagaStateMachine<OrderStateMachine, OrderState>()
                 .EntityFrameworkRepository(r =>
                 {
@@ -49,6 +45,50 @@ public static class MasstransitExtensions
                 {
                     h.Username("user");
                     h.Password("password");
+                });
+                
+                cfg.Message<Domain.Events.Payment.Submitted>(x => { });
+                cfg.Publish<Domain.Events.Payment.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<Domain.Events.Payment.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.iniciar"));
+
+                cfg.Message<Domain.Events.Payment.Rollback>(x => { });
+                cfg.Publish<Domain.Events.Payment.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<Domain.Events.Payment.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.rollback"));
+                
+                cfg.Message<Domain.Events.Shipping.Submitted>(x => { });
+                cfg.Publish<Domain.Events.Shipping.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<Domain.Events.Shipping.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.envio.iniciar"));
+                
+                cfg.Message<Domain.Events.Shipping.Rollback>(x => { });
+                cfg.Publish<Domain.Events.Shipping.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<Domain.Events.Shipping.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.envio.rollback"));
+
+                cfg.ReceiveEndpoint("saga.pagamento.confirmado", e =>
+                {
+                    e.Bind<Domain.Events.Payment.Accepted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+
+                cfg.ReceiveEndpoint("saga.pagamento.cancelado", e =>
+                {
+                    e.Bind<Domain.Events.Payment.Cancelled>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+
+                cfg.ReceiveEndpoint("saga.envio.confirmado", e =>
+                {
+                    e.Bind<Domain.Events.Shipping.Accepted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+
+                cfg.ReceiveEndpoint("saga.envio.cancelado", e =>
+                {
+                    e.Bind<Domain.Events.Shipping.Cancelled>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
                 });
             });
             #endif
