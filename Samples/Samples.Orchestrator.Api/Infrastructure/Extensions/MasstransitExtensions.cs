@@ -10,6 +10,12 @@ using Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
 namespace Samples.Orchestrator.Api.Infrastructure.Extensions;
 
+/*
+ * https://masstransit.io/
+ * https://masstransit.io/documentation/configuration/transports/rabbitmq
+ * https://masstransit.io/documentation/transports/rabbitmq
+ */
+
 public static class MasstransitExtensions
 {
     public static IServiceCollection AddMasstransit(this IServiceCollection services, IConfiguration configuration)
