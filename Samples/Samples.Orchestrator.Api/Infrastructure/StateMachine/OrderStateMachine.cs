@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Samples.Orchestrator.BuildingBlocks.Events.Payment;
 
 namespace Samples.Orchestrator.Api.Infrastructure.StateMachine;
 
@@ -14,15 +15,15 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public State ShippingCancelled { get; private set; }
     public State ShippingRollback { get; private set; }
 
-    public Event<Domain.Events.Payment.Submitted> PaymentSubmittedState { get; private set; }
-    public Event<Domain.Events.Payment.Accepted> PaymentAcceptedState { get; private set; }
-    public Event<Domain.Events.Payment.Cancelled> PaymentCancelledState { get; private set; }
-    public Event<Domain.Events.Payment.Rollback> PaymentRollbackState { get; private set; }
+    public Event<Submitted> PaymentSubmittedState { get; private set; }
+    public Event<Accepted> PaymentAcceptedState { get; private set; }
+    public Event<Cancelled> PaymentCancelledState { get; private set; }
+    public Event<Rollback> PaymentRollbackState { get; private set; }
 
-    public Event<Domain.Events.Shipping.Submitted> ShippingSubmittedState { get; private set; }
-    public Event<Domain.Events.Shipping.Accepted> ShippingAcceptedState { get; private set; }
-    public Event<Domain.Events.Shipping.Cancelled> ShippingCancelledState { get; private set; }
-    public Event<Domain.Events.Shipping.Rollback> ShippingRollbackState { get; private set; }
+    public Event<BuildingBlocks.Events.Shipping.Submitted> ShippingSubmittedState { get; private set; }
+    public Event<BuildingBlocks.Events.Shipping.Accepted> ShippingAcceptedState { get; private set; }
+    public Event<BuildingBlocks.Events.Shipping.Cancelled> ShippingCancelledState { get; private set; }
+    public Event<BuildingBlocks.Events.Shipping.Rollback> ShippingRollbackState { get; private set; }
 
     public OrderStateMachine()
     {
@@ -33,7 +34,7 @@ When(PaymentSubmittedState)
                 .ThenAsync(async context =>
                 {
                         context.Saga.CorrelationId = context.Message.CorrelationId;
-                        await context.Publish<Domain.Events.Payment.Submitted>(new
+                        await context.Publish<Submitted>(new
                         {
                                 CorrelationId = context.Message.CorrelationId
                         });
@@ -81,7 +82,7 @@ When(PaymentAcceptedState)
                 .ThenAsync(async context =>
                 {
                     context.Saga.CorrelationId = context.Message.CorrelationId;
-                    await context.Publish(new Domain.Events.Shipping.Submitted
+                    await context.Publish(new BuildingBlocks.Events.Shipping.Submitted
                     {
                         CorrelationId = context.Message.CorrelationId
                     });

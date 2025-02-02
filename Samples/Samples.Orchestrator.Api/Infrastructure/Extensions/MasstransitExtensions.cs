@@ -53,46 +53,46 @@ public static class MasstransitExtensions
                     h.Password("password");
                 });
                 
-                cfg.Message<Domain.Events.Payment.Submitted>(x => { });
-                cfg.Publish<Domain.Events.Payment.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
-                cfg.Send<Domain.Events.Payment.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.iniciar"));
+                cfg.Message<BuildingBlocks.Events.Payment.Submitted>(x => { });
+                cfg.Publish<BuildingBlocks.Events.Payment.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<BuildingBlocks.Events.Payment.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.iniciar"));
 
-                cfg.Message<Domain.Events.Payment.Rollback>(x => { });
-                cfg.Publish<Domain.Events.Payment.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
-                cfg.Send<Domain.Events.Payment.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.rollback"));
+                cfg.Message<BuildingBlocks.Events.Payment.Rollback>(x => { });
+                cfg.Publish<BuildingBlocks.Events.Payment.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<BuildingBlocks.Events.Payment.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.pagamento.rollback"));
                 
-                cfg.Message<Domain.Events.Shipping.Submitted>(x => { });
-                cfg.Publish<Domain.Events.Shipping.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
-                cfg.Send<Domain.Events.Shipping.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.envio.iniciar"));
+                cfg.Message<BuildingBlocks.Events.Shipping.Submitted>(x => { });
+                cfg.Publish<BuildingBlocks.Events.Shipping.Submitted>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<BuildingBlocks.Events.Shipping.Submitted>(x => x.UseRoutingKeyFormatter(context => "saga.envio.iniciar"));
                 
-                cfg.Message<Domain.Events.Shipping.Rollback>(x => { });
-                cfg.Publish<Domain.Events.Shipping.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
-                cfg.Send<Domain.Events.Shipping.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.envio.rollback"));
+                cfg.Message<BuildingBlocks.Events.Shipping.Rollback>(x => { });
+                cfg.Publish<BuildingBlocks.Events.Shipping.Rollback>(x => x.ExchangeType = ExchangeType.Direct);
+                cfg.Send<BuildingBlocks.Events.Shipping.Rollback>(x => x.UseRoutingKeyFormatter(context => "saga.envio.rollback"));
 
                 cfg.ReceiveEndpoint("saga.pagamento.confirmado", e =>
                 {
-                    e.Bind<Domain.Events.Payment.Accepted>();
+                    e.Bind<BuildingBlocks.Events.Payment.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
                 cfg.ReceiveEndpoint("saga.pagamento.cancelado", e =>
                 {
-                    e.Bind<Domain.Events.Payment.Cancelled>();
+                    e.Bind<BuildingBlocks.Events.Payment.Cancelled>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
                 cfg.ReceiveEndpoint("saga.envio.confirmado", e =>
                 {
-                    e.Bind<Domain.Events.Shipping.Accepted>();
+                    e.Bind<BuildingBlocks.Events.Shipping.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
                 cfg.ReceiveEndpoint("saga.envio.cancelado", e =>
                 {
-                    e.Bind<Domain.Events.Shipping.Cancelled>();
+                    e.Bind<BuildingBlocks.Events.Shipping.Cancelled>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
@@ -106,15 +106,15 @@ public static class MasstransitExtensions
                 
                 #region Payment
             
-                rider.AddProducer<Domain.Events.Payment.Submitted>("saga.pagamento.iniciar");
-                rider.AddProducer<Domain.Events.Payment.Rollback>("saga.pagamento.rollback");
+                rider.AddProducer<BuildingBlocks.Events.Payment.Submitted>("saga.pagamento.iniciar");
+                rider.AddProducer<BuildingBlocks.Events.Payment.Rollback>("saga.pagamento.rollback");
             
                 #endregion
             
                 #region Shipping
             
-                rider.AddProducer<Domain.Events.Shipping.Submitted>("saga.envio.iniciar");
-                rider.AddProducer<Domain.Events.Shipping.Rollback>("saga.envio.rollback");
+                rider.AddProducer<BuildingBlocks.Events.Shipping.Submitted>("saga.envio.iniciar");
+                rider.AddProducer<BuildingBlocks.Events.Shipping.Rollback>("saga.envio.rollback");
             
                 #endregion
                 
@@ -124,13 +124,13 @@ public static class MasstransitExtensions
                     
                     #region Payment
                     
-                    k.TopicEndpoint<Domain.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
+                    k.TopicEndpoint<BuildingBlocks.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
                     {
                         e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
-                    k.TopicEndpoint<Domain.Events.Payment.Cancelled>("saga.pagamento.cancelado", "saga-pagamento-group", e =>
+                    k.TopicEndpoint<BuildingBlocks.Events.Payment.Cancelled>("saga.pagamento.cancelado", "saga-pagamento-group", e =>
                     {
                         e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
@@ -140,13 +140,13 @@ public static class MasstransitExtensions
                 
                     #region Shipping
                 
-                    k.TopicEndpoint<Domain.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
+                    k.TopicEndpoint<BuildingBlocks.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
                     {
                         e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);
                     });
                     
-                    k.TopicEndpoint<Domain.Events.Shipping.Cancelled>("saga.envio.cancelado", "saga-envio-group", e =>
+                    k.TopicEndpoint<BuildingBlocks.Events.Shipping.Cancelled>("saga.envio.cancelado", "saga-envio-group", e =>
                     {
                         e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                         e.ConfigureSaga<OrderState>(context);

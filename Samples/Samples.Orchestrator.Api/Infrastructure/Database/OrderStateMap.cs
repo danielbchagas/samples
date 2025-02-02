@@ -11,11 +11,5 @@ public class OrderStateMap : SagaClassMap<OrderState>
     {
         entity.Property(x => x.CurrentState).HasMaxLength(64);
         entity.Property(x => x.OrderDate);
-
-        // If using Optimistic concurrency, otherwise remove this property
-        entity.Property(x => x.RowVersion)
-            .HasColumnName("xmin")
-            .HasColumnType("xid")
-            .IsRowVersion();
     }
 }

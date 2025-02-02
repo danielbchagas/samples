@@ -1,0 +1,6 @@
+@Samples.Orchestrator.Shipping_HostAddress = http://localhost:5287
+
+GET {{Samples.Orchestrator.Shipping_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
