@@ -1,13 +1,16 @@
 ﻿using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
+using Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
-namespace Samples.Orchestrator.Api.Infrastructure.Database;
+namespace Samples.Orchestrator.Core.Infrastructure.Database;
 
 public class OrderStateDbContext : SagaDbContext
 {
     public OrderStateDbContext(DbContextOptions options) : base(options)
     {
     }
+    
+    public DbSet<OrderState> OrderStates { get; set; }
 
     protected override IEnumerable<ISagaClassMap> Configurations
     {

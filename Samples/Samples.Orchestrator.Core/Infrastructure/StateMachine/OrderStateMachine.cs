@@ -1,7 +1,6 @@
 ﻿using MassTransit;
-using Samples.Orchestrator.BuildingBlocks.Events.Payment;
 
-namespace Samples.Orchestrator.Api.Infrastructure.StateMachine;
+namespace Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
@@ -15,10 +14,10 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public State ShippingCancelled { get; private set; }
     public State ShippingRollback { get; private set; }
 
-    public Event<Submitted> PaymentSubmittedState { get; private set; }
-    public Event<Accepted> PaymentAcceptedState { get; private set; }
-    public Event<Cancelled> PaymentCancelledState { get; private set; }
-    public Event<Rollback> PaymentRollbackState { get; private set; }
+    public Event<BuildingBlocks.Events.Payment.Submitted> PaymentSubmittedState { get; private set; }
+    public Event<BuildingBlocks.Events.Payment.Accepted> PaymentAcceptedState { get; private set; }
+    public Event<BuildingBlocks.Events.Payment.Cancelled> PaymentCancelledState { get; private set; }
+    public Event<BuildingBlocks.Events.Payment.Rollback> PaymentRollbackState { get; private set; }
 
     public Event<BuildingBlocks.Events.Shipping.Submitted> ShippingSubmittedState { get; private set; }
     public Event<BuildingBlocks.Events.Shipping.Accepted> ShippingAcceptedState { get; private set; }
@@ -33,10 +32,12 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 When(PaymentSubmittedState)
                 .ThenAsync(async context =>
                 {
-                        context.Saga.CorrelationId = context.Message.CorrelationId;
-                        await context.Publish<Submitted>(new
+                        context.Saga.Init(context.Message);
+                        
+                        await context.Publish<BuildingBlocks.Events.Payment.Submitted>(new
                         {
-                                CorrelationId = context.Message.CorrelationId
+                                context.Message.OrderId,
+                                context.Message.PaymentId
                         });
                 })
                 .TransitionTo(PaymentSubmitted)
@@ -49,31 +50,40 @@ When(PaymentAcceptedState)
         
         During(PaymentSubmitted,
 When(PaymentCancelledState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .ThenAsync(async context =>
+                {
+                        await context.Publish<BuildingBlocks.Events.Payment.Cancelled>(new
+                        {
+                                context.Message.Reason
+                        });
+                })
                 .TransitionTo(PaymentCancelled)
         );
 
         During(PaymentSubmitted,
 When(PaymentRollbackState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(PaymentRollback)
         );
 
         During(PaymentAccepted,
 When(PaymentCancelledState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(PaymentCancelled)
         );
 
         During(PaymentCancelled,
 When(PaymentRollbackState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .ThenAsync(async context =>
+                {
+                        await context.Publish<BuildingBlocks.Events.Payment.Rollback>(new
+                        {
+                                context.Message.Exception
+                        });
+                })
                 .TransitionTo(PaymentRollback)
         );
         
         During(PaymentSubmitted,
 When(PaymentSubmittedState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .Finalize()
         );
 
@@ -81,42 +91,49 @@ When(PaymentSubmittedState)
 When(PaymentAcceptedState)
                 .ThenAsync(async context =>
                 {
-                    context.Saga.CorrelationId = context.Message.CorrelationId;
-                    await context.Publish(new BuildingBlocks.Events.Shipping.Submitted
+                    await context.Publish<BuildingBlocks.Events.Shipping.Submitted>(new 
                     {
-                        CorrelationId = context.Message.CorrelationId
+                        context.Message.OrderId,
+                        context.Message.PaymentId,
                     });
-                }).TransitionTo(ShippingSubmitted)
+                })
+                .TransitionTo(ShippingSubmitted)
         );
 
         During(ShippingSubmitted,
 When(ShippingSubmittedState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(ShippingSubmitted)
         );
         
         During(ShippingSubmitted,
 When(ShippingAcceptedState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
                 .TransitionTo(ShippingAccepted)
         );
         
         During(ShippingAccepted,
 When(ShippingCancelledState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
+                .ThenAsync(async context =>
+                {
+                        await context.Publish<BuildingBlocks.Events.Shipping.Cancelled>(new
+                        {
+                                context.Message.Reason
+                        });
+                })
                 .TransitionTo(ShippingCancelled)
         );
         
         During(ShippingCancelled,
-When(ShippingRollbackState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .TransitionTo(ShippingRollback)
+                When(ShippingRollbackState)
+                        .ThenAsync(async context =>
+                        {
+                                await context.Publish<BuildingBlocks.Events.Shipping.Rollback>(new
+                                {
+                                        context.Message.Exception
+                                });
+                        })
+                        .TransitionTo(PaymentRollback)
         );
         
-        During(ShippingRollback,
-When(ShippingRollbackState)
-                .Then(context => context.Saga.CorrelationId = context.Message.CorrelationId)
-                .Finalize()
-        );
+        SetCompletedWhenFinalized();
     }
 }

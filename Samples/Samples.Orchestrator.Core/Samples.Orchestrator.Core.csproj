@@ -21,10 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Domain\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\Samples.Orchestrator.BuildingBlocks\Samples.Orchestrator.BuildingBlocks.csproj" />
     </ItemGroup>
 

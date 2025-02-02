@@ -2,16 +2,12 @@
 
 namespace Samples.Orchestrator.BuildingBlocks.Events;
 
-public record SagaEvent : SagaStateMachineInstance
+public record SagaEvent : ISaga
 {
     public Guid CorrelationId { get; set; }
-    private string? CurrentState { get; set; }
-    private DateTime? OrderDate { get; set; }
-
-    public void Init(SagaEvent message)
-    {
-        CorrelationId = message.CorrelationId;
-        CurrentState = message.CurrentState;
-        OrderDate = message.OrderDate;
-    }
+    public string? CurrentState { get; set; }
+    
+    public int OrderId { get; set; }
+    public int PaymentId { get; set; }
+    public DateTime OrderDate { get; set; }
 }
