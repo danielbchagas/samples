@@ -8,7 +8,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public State PaymentAccepted { get; private set; }
     public State PaymentCancelled { get; private set; }
     public State PaymentRollback { get; private set; }
-    
+
     public State ShippingSubmitted { get; private set; }
     public State ShippingAccepted { get; private set; }
     public State ShippingCancelled { get; private set; }
@@ -28,112 +28,131 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     {
         InstanceState(x => x.CurrentState);
 
+        ConfigurePaymentStateTransitions();
+        ConfigureShippingStateTransitions();
+
+        SetCompletedWhenFinalized();
+    }
+
+    private void ConfigurePaymentStateTransitions()
+    {
         Initially(
-When(PaymentSubmittedState)
-                .ThenAsync(async context =>
-                {
-                        context.Saga.Init(context.Message);
-                        
-                        await context.Publish<BuildingBlocks.Events.Payment.Submitted>(new
-                        {
-                                context.Message.OrderId,
-                                context.Message.PaymentId
-                        });
-                })
+            When(PaymentSubmittedState)
+                .ThenAsync(HandlePaymentSubmission)
                 .TransitionTo(PaymentSubmitted)
         );
 
         During(PaymentSubmitted,
-When(PaymentAcceptedState)
-                .TransitionTo(PaymentAccepted)
-        );
-        
-        During(PaymentSubmitted,
-When(PaymentCancelledState)
-                .ThenAsync(async context =>
-                {
-                        await context.Publish<BuildingBlocks.Events.Payment.Cancelled>(new
-                        {
-                                context.Message.Reason
-                        });
-                })
-                .TransitionTo(PaymentCancelled)
-        );
+            When(PaymentAcceptedState)
+                .ThenAsync(HandlePaymentAccepted)
+                .TransitionTo(PaymentAccepted),
+            
+            When(PaymentCancelledState)
+                .ThenAsync(HandlePaymentCancelled)
+                .TransitionTo(PaymentCancelled),
 
-        During(PaymentSubmitted,
-When(PaymentRollbackState)
+            When(PaymentRollbackState)
                 .TransitionTo(PaymentRollback)
         );
 
         During(PaymentAccepted,
-When(PaymentCancelledState)
+            When(PaymentCancelledState)
                 .TransitionTo(PaymentCancelled)
         );
 
         During(PaymentCancelled,
-When(PaymentRollbackState)
-                .ThenAsync(async context =>
-                {
-                        await context.Publish<BuildingBlocks.Events.Payment.Rollback>(new
-                        {
-                                context.Message.Exception
-                        });
-                })
+            When(PaymentRollbackState)
+                .ThenAsync(HandlePaymentRollback)
                 .TransitionTo(PaymentRollback)
         );
-        
-        During(PaymentSubmitted,
-When(PaymentSubmittedState)
-                .Finalize()
-        );
+    }
 
-        During(PaymentSubmitted,
-When(PaymentAcceptedState)
-                .ThenAsync(async context =>
-                {
-                    await context.Publish<BuildingBlocks.Events.Shipping.Submitted>(new 
-                    {
-                        context.Message.OrderId,
-                        context.Message.PaymentId,
-                    });
-                })
+    private void ConfigureShippingStateTransitions()
+    {
+        During(PaymentAccepted,
+            When(PaymentAcceptedState)
+                .ThenAsync(HandleShippingSubmission)
                 .TransitionTo(ShippingSubmitted)
         );
 
         During(ShippingSubmitted,
-When(ShippingSubmittedState)
-                .TransitionTo(ShippingSubmitted)
-        );
-        
-        During(ShippingSubmitted,
-When(ShippingAcceptedState)
+            When(ShippingSubmittedState)
+                .TransitionTo(ShippingSubmitted),
+            
+            When(ShippingAcceptedState)
                 .TransitionTo(ShippingAccepted)
         );
-        
+
         During(ShippingAccepted,
-When(ShippingCancelledState)
-                .ThenAsync(async context =>
-                {
-                        await context.Publish<BuildingBlocks.Events.Shipping.Cancelled>(new
-                        {
-                                context.Message.Reason
-                        });
-                })
+            When(ShippingCancelledState)
+                .ThenAsync(HandleShippingCancelled)
                 .TransitionTo(ShippingCancelled)
         );
-        
+
         During(ShippingCancelled,
-                When(ShippingRollbackState)
-                        .ThenAsync(async context =>
-                        {
-                                await context.Publish<BuildingBlocks.Events.Shipping.Rollback>(new
-                                {
-                                        context.Message.Exception
-                                });
-                        })
-                        .TransitionTo(PaymentRollback)
+            When(ShippingRollbackState)
+                .ThenAsync(HandleShippingRollback)
+                .TransitionTo(ShippingRollback)
         );
-        
-        SetCompletedWhenFinalized();
+    }
+
+    private async Task HandlePaymentSubmission(BehaviorContext<OrderState, BuildingBlocks.Events.Payment.Submitted> context)
+    {
+        context.Saga.Init(context.Message);
+        await context.Publish(new BuildingBlocks.Events.Payment.Submitted
+        {
+            OrderId = context.Message.OrderId,
+            PaymentId = context.Message.PaymentId
+        });
+    }
+
+    private async Task HandlePaymentAccepted(BehaviorContext<OrderState, BuildingBlocks.Events.Payment.Accepted> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Shipping.Submitted
+        {
+            OrderId = context.Message.OrderId,
+            PaymentId = context.Message.PaymentId
+        });
+    }
+
+    private async Task HandlePaymentCancelled(BehaviorContext<OrderState, BuildingBlocks.Events.Payment.Cancelled> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
+        {
+            Reason = context.Message.Reason
+        });
+    }
+
+    private async Task HandlePaymentRollback(BehaviorContext<OrderState, BuildingBlocks.Events.Payment.Rollback> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Payment.Rollback
+        {
+            Exception = context.Message.Exception
+        });
+    }
+
+    private async Task HandleShippingSubmission(BehaviorContext<OrderState, BuildingBlocks.Events.Payment.Accepted> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Shipping.Submitted
+        {
+            OrderId = context.Message.OrderId,
+            PaymentId = context.Message.PaymentId
+        });
+    }
+
+    private async Task HandleShippingCancelled(BehaviorContext<OrderState, BuildingBlocks.Events.Shipping.Cancelled> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Shipping.Cancelled
+        {
+            Reason = context.Message.Reason
+        });
+    }
+
+    private async Task HandleShippingRollback(BehaviorContext<OrderState, BuildingBlocks.Events.Shipping.Rollback> context)
+    {
+        await context.Publish(new BuildingBlocks.Events.Shipping.Rollback
+        {
+            Exception = context.Message.Exception
+        });
     }
 }
