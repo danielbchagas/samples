@@ -71,4 +71,22 @@ public class OrderStateMachineTests
         // Assert
         Assert.NotNull(instance);
     }
+    
+    [Fact]
+    public async Task Should_TransitionTo_PaymentRollback_When_PaymentRollbackEventReceived()
+    {
+        // Arrange
+        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await _harness.Start();
+        var sagaId = NewId.NextGuid();
+    
+        // Act
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, OrderId = 1, Exception = new Exception("Internal Server error") });
+        
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
+        
+        // Assert
+        Assert.NotNull(instance);
+    }
 }
