@@ -8,6 +8,5 @@ public record SagaEvent : ISaga
     public string? CurrentState { get; set; }
     
     public int OrderId { get; set; }
-    public int PaymentId { get; set; }
-    public DateTime OrderDate { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

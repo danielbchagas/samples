@@ -9,8 +9,9 @@ public class OrderState : SagaStateMachineInstance
     public string? CurrentState { get; set; }
     
     public int OrderId { get; set; }
-    public int PaymentId { get; set; }
-    public DateTime? OrderDate { get; set; }
+    public string? Reason { get; set; }
+    public Exception? Exception { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public void Init(SagaEvent message)
     {
@@ -18,7 +19,6 @@ public class OrderState : SagaStateMachineInstance
         CurrentState = message.CurrentState;
         
         OrderId = message.OrderId;
-        PaymentId = message.PaymentId;
-        OrderDate = DateTime.UtcNow;
+        CreatedAt = DateTime.UtcNow;
     }
 }

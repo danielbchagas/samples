@@ -57,13 +57,6 @@ public static class MasstransitExtensions
 
                 #region Payment
 
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
-                {
-                    e.Bind<BuildingBlocks.Events.Payment.Submitted>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
                 {
                     e.Bind<BuildingBlocks.Events.Payment.Accepted>();
@@ -71,13 +64,6 @@ public static class MasstransitExtensions
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentCancelled, e =>
-                {
-                    e.Bind<BuildingBlocks.Events.Payment.Cancelled>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentRollback, e =>
                 {
                     e.Bind<BuildingBlocks.Events.Payment.Rollback>();
@@ -89,13 +75,6 @@ public static class MasstransitExtensions
 
                 #region Shipping
 
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
-                {
-                    e.Bind<BuildingBlocks.Events.Shipping.Submitted>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
                 {
                     e.Bind<BuildingBlocks.Events.Shipping.Accepted>();
@@ -103,13 +82,6 @@ public static class MasstransitExtensions
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingCancelled, e =>
-                {
-                    e.Bind<BuildingBlocks.Events.Shipping.Cancelled>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingRollback, e =>
                 {
                     e.Bind<BuildingBlocks.Events.Shipping.Rollback>();

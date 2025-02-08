@@ -28,22 +28,6 @@ app.MapPost("/submitted", async (ITopicProducer<Submitted> producer, Submitted d
     .WithName("Submitted")
     .WithOpenApi();
 
-app.MapPost("/accepted", async (ITopicProducer<Accepted> producer, Accepted data) =>
-    {
-        await producer.Produce(data);
-        return Results.Accepted();
-    })
-    .WithName("Accepted")
-    .WithOpenApi();
-
-app.MapPost("/rollback", async (ITopicProducer<Rollback> producer, Rollback data) =>
-    {
-        await producer.Produce(data);
-        return Results.Accepted();
-    })
-    .WithName("Rollback")
-    .WithOpenApi();
-
 app.MapPost("/cancelled", async (ITopicProducer<Cancelled> producer, Cancelled data) =>
     {
         await producer.Produce(data);
