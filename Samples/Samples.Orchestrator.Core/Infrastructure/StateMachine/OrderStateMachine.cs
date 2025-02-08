@@ -36,7 +36,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     {
         InstanceState(x => x.CurrentState);
 
-        // Stage 1: Payment
         Initially(
 When(PaymentSubmittedState)
                 .ThenAsync(async context =>
@@ -51,24 +50,7 @@ When(PaymentSubmittedState)
                 .TransitionTo(PaymentSubmitted)
         );
 
-        // Stage 2:
-        // Payment -> PaymentAccepted -> ShippingSubmitted
-        // Payment -> PaymentCancelled
-        // Payment -> PaymentRollback
         During(PaymentSubmitted,
-When(PaymentAcceptedState)
-                .TransitionTo(PaymentAccepted),
-            
-            When(PaymentCancelledState)
-                .TransitionTo(PaymentCancelled),
-
-            When(PaymentRollbackState)
-                .TransitionTo(PaymentRollback)
-        );
-        
-        // Stage 3:
-        // Payment -> PaymentAccepted -> ShippingSubmitted
-        During(PaymentAccepted,
 When(PaymentAcceptedState)
                 .ThenAsync(async context =>
                 {
@@ -77,29 +59,20 @@ When(PaymentAcceptedState)
                         OrderId = context.Message.OrderId
                     });
                 })
-                .TransitionTo(ShippingSubmitted)
-        );
+                .TransitionTo(ShippingSubmitted),
+            
+            When(PaymentCancelledState)
+                .TransitionTo(PaymentCancelled),
 
-        // Stage 4:
-        // Shipping -> ShippingAccepted
-        // Shipping -> ShippingCancelled
-        // Shipping -> ShippingRollback
+            When(PaymentRollbackState)
+                .TransitionTo(PaymentRollback)
+        );
+        
         During(ShippingSubmitted,
 When(ShippingAcceptedState)
                 .TransitionTo(ShippingAccepted),
 
             When(ShippingCancelledState)
-                .TransitionTo(ShippingCancelled),
-
-            When(ShippingRollbackState)
-                .TransitionTo(ShippingRollback)
-        );
-
-        // Stage 5:
-        // Shipping -> ShippingCancelled -> PaymentCancelled
-        // Shipping -> ShippingRollback -> PaymentRollback
-        During(ShippingAccepted,
-When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
                     await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
@@ -107,7 +80,7 @@ When(ShippingCancelledState)
                         Reason = context.Message.Reason
                     });
                 })
-                .TransitionTo(PaymentCancelled),
+                .TransitionTo(ShippingCancelled),
 
             When(ShippingRollbackState)
                 .ThenAsync(async context =>
@@ -117,7 +90,29 @@ When(ShippingCancelledState)
                         Exception = context.Message.Exception
                     });
                 })
-                .TransitionTo(PaymentRollback)
+                .TransitionTo(ShippingRollback)
+        );
+
+        During(ShippingAccepted,
+When(ShippingCancelledState)
+                .ThenAsync(async context =>
+                {
+                    await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
+                    {
+                        Reason = context.Message.Reason
+                    });
+                })
+                .TransitionTo(ShippingCancelled),
+
+            When(ShippingRollbackState)
+                .ThenAsync(async context =>
+                {
+                    await context.Publish(new BuildingBlocks.Events.Payment.Rollback
+                    {
+                        Exception = context.Message.Exception
+                    });
+                })
+                .TransitionTo(ShippingRollback)
         );
 
         SetCompletedWhenFinalized();

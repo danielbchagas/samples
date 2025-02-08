@@ -36,7 +36,7 @@ public class OrderStateMachineTests
     }
     
     [Fact]
-    public async Task Should_TransitionTo_PaymentAccepted_When_PaymentAcceptedEventReceived()
+    public async Task Should_TransitionTo_ShippingSubmitted_When_PaymentAcceptedEventReceived()
     {
         // Arrange
         var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
@@ -48,7 +48,7 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
         
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentAccepted);
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingSubmitted);
         
         // Assert
         Assert.NotNull(instance);
@@ -85,6 +85,46 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, OrderId = 1, Exception = new Exception("Internal Server error") });
         
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
+        
+        // Assert
+        Assert.NotNull(instance);
+    }
+    
+    [Fact]
+    public async Task Should_TransitionTo_ShippingCancelled_When_PaymentAcceptedEventReceived()
+    {
+        // Arrange
+        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await _harness.Start();
+        
+        var sagaId = NewId.NextGuid();
+    
+        // Act
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = "Not enough funds" });
+        
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingCancelled);
+        
+        // Assert
+        Assert.NotNull(instance);
+    }
+    
+    [Fact]
+    public async Task Should_TransitionTo_ShippingRollback_When_PaymentAcceptedEventReceived()
+    {
+        // Arrange
+        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await _harness.Start();
+        
+        var sagaId = NewId.NextGuid();
+    
+        // Act
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, OrderId = 1, Exception = new Exception("Internal Server error") });
+        
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingRollback);
         
         // Assert
         Assert.NotNull(instance);
