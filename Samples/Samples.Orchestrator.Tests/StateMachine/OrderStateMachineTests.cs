@@ -91,6 +91,27 @@ public class OrderStateMachineTests
     }
     
     [Fact]
+    public async Task Should_TransitionTo_ShippingAccepted_When_PaymentAcceptedEventReceived()
+    {
+        // Arrange
+        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await _harness.Start();
+        
+        var sagaId = NewId.NextGuid();
+    
+        // Act
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingAccepted);
+        
+        // Assert
+        Assert.NotNull(instance);
+    }
+    
+    [Fact]
     public async Task Should_TransitionTo_ShippingCancelled_When_PaymentAcceptedEventReceived()
     {
         // Arrange
@@ -102,6 +123,7 @@ public class OrderStateMachineTests
         // Act
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1 });
         await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = "Not enough funds" });
         
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingCancelled);
@@ -122,6 +144,7 @@ public class OrderStateMachineTests
         // Act
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, OrderId = 1 });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1 });
         await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, OrderId = 1, Exception = new Exception("Internal Server error") });
         
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingRollback);
