@@ -1,4 +1,6 @@
 ﻿using MassTransit;
+using Payment = Samples.Orchestrator.BuildingBlocks.Events.Payment;
+using Shipping = Samples.Orchestrator.BuildingBlocks.Events.Shipping;
 
 namespace Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
@@ -19,17 +21,17 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     #endregion
 
     #region Payment Events
-    public Event<BuildingBlocks.Events.Payment.Submitted> PaymentSubmittedState { get; private set; }
-    public Event<BuildingBlocks.Events.Payment.Accepted> PaymentAcceptedState { get; private set; }
-    public Event<BuildingBlocks.Events.Payment.Cancelled> PaymentCancelledState { get; private set; }
-    public Event<BuildingBlocks.Events.Payment.Rollback> PaymentRollbackState { get; private set; }
+    public Event<Payment.Submitted> PaymentSubmittedState { get; private set; }
+    public Event<Payment.Accepted> PaymentAcceptedState { get; private set; }
+    public Event<Payment.Cancelled> PaymentCancelledState { get; private set; }
+    public Event<Payment.Rollback> PaymentRollbackState { get; private set; }
     #endregion
 
     #region Shipping Events
-    public Event<BuildingBlocks.Events.Shipping.Submitted> ShippingSubmittedState { get; private set; }
-    public Event<BuildingBlocks.Events.Shipping.Accepted> ShippingAcceptedState { get; private set; }
-    public Event<BuildingBlocks.Events.Shipping.Cancelled> ShippingCancelledState { get; private set; }
-    public Event<BuildingBlocks.Events.Shipping.Rollback> ShippingRollbackState { get; private set; }
+    public Event<Shipping.Submitted> ShippingSubmittedState { get; private set; }
+    public Event<Shipping.Accepted> ShippingAcceptedState { get; private set; }
+    public Event<Shipping.Cancelled> ShippingCancelledState { get; private set; }
+    public Event<Shipping.Rollback> ShippingRollbackState { get; private set; }
     #endregion
 
     public OrderStateMachine()
@@ -42,7 +44,7 @@ When(PaymentSubmittedState)
                 {
                     context.Saga.Init(context.Message);
                     
-                    await context.Publish(new BuildingBlocks.Events.Payment.Submitted
+                    await context.Publish(new Payment.Submitted
                     {
                         OrderId = context.Message.OrderId
                     });
@@ -52,20 +54,25 @@ When(PaymentSubmittedState)
 
         During(PaymentSubmitted,
 When(PaymentAcceptedState)
-                .ThenAsync(async context =>
-                {
-                    await context.Publish(new BuildingBlocks.Events.Shipping.Submitted
-                    {
-                        OrderId = context.Message.OrderId
-                    });
-                })
-                .TransitionTo(ShippingSubmitted),
+                .TransitionTo(PaymentAccepted),
             
             When(PaymentCancelledState)
                 .TransitionTo(PaymentCancelled),
 
             When(PaymentRollbackState)
                 .TransitionTo(PaymentRollback)
+        );
+        
+        During(PaymentSubmitted, PaymentAccepted,
+When(PaymentAcceptedState)
+                .ThenAsync(async context =>
+                {
+                    await context.Publish(new Shipping.Submitted
+                    {
+                        OrderId = context.Message.OrderId
+                    });
+                })
+                .TransitionTo(ShippingSubmitted)
         );
         
         During(ShippingSubmitted,
@@ -75,7 +82,7 @@ When(ShippingAcceptedState)
             When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
+                    await context.Publish(new Payment.Cancelled
                     {
                         Reason = context.Message.Reason
                     });
@@ -85,7 +92,7 @@ When(ShippingAcceptedState)
             When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
+                    await context.Publish(new Payment.Cancelled
                     {
                         Reason = context.Message.Reason
                     });
@@ -95,7 +102,7 @@ When(ShippingAcceptedState)
             When(ShippingRollbackState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new BuildingBlocks.Events.Payment.Rollback
+                    await context.Publish(new Payment.Rollback
                     {
                         Exception = context.Message.Exception
                     });
