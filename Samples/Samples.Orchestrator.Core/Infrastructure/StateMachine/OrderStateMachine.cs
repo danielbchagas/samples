@@ -82,19 +82,7 @@ When(ShippingAcceptedState)
                 })
                 .TransitionTo(ShippingCancelled),
 
-            When(ShippingRollbackState)
-                .ThenAsync(async context =>
-                {
-                    await context.Publish(new BuildingBlocks.Events.Payment.Rollback
-                    {
-                        Exception = context.Message.Exception
-                    });
-                })
-                .TransitionTo(ShippingRollback)
-        );
-
-        During(ShippingAccepted,
-When(ShippingCancelledState)
+            When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
                     await context.Publish(new BuildingBlocks.Events.Payment.Cancelled
@@ -114,7 +102,7 @@ When(ShippingCancelledState)
                 })
                 .TransitionTo(ShippingRollback)
         );
-
+        
         SetCompletedWhenFinalized();
     }
 }
