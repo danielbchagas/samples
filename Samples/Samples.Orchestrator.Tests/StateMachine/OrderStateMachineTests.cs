@@ -1,8 +1,8 @@
 ﻿using MassTransit;
 using MassTransit.Testing;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
-using Payment = Samples.Orchestrator.BuildingBlocks.Events.Payment;
-using Shipping = Samples.Orchestrator.BuildingBlocks.Events.Shipping;
+using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
+using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
 namespace Samples.Orchestrator.Tests.StateMachine;
 

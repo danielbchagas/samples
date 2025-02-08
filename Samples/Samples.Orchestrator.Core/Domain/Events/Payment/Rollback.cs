@@ -1,4 +1,4 @@
-﻿namespace Samples.Orchestrator.BuildingBlocks.Events.Payment;
+﻿namespace Samples.Orchestrator.Core.Domain.Events.Payment;
 
 public record Rollback : SagaEvent
 {

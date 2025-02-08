@@ -1,6 +1,6 @@
 ﻿using MassTransit;
 
-namespace Samples.Orchestrator.BuildingBlocks.Events;
+namespace Samples.Orchestrator.Core.Domain.Events;
 
 public record SagaEvent : ISaga
 {

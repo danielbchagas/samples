@@ -1,4 +1,4 @@
-﻿namespace Samples.Orchestrator.BuildingBlocks.Events.Shipping;
+﻿namespace Samples.Orchestrator.Core.Domain.Events.Payment;
 
 public record Cancelled : SagaEvent
 {

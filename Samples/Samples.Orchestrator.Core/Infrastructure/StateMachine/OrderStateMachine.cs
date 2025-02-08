@@ -1,6 +1,6 @@
 ﻿using MassTransit;
-using Payment = Samples.Orchestrator.BuildingBlocks.Events.Payment;
-using Shipping = Samples.Orchestrator.BuildingBlocks.Events.Shipping;
+using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
+using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
 namespace Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
@@ -82,7 +82,7 @@ When(ShippingAcceptedState)
             When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new Payment.Cancelled
+                    await context.Publish(new Shipping.Cancelled
                     {
                         Reason = context.Message.Reason
                     });

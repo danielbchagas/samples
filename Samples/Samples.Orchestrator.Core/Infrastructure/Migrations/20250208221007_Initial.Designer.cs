@@ -12,7 +12,7 @@ using Samples.Orchestrator.Core.Infrastructure.Database;
 namespace Samples.Orchestrator.Core.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderStateDbContext))]
-    [Migration("20241026125247_Initial")]
+    [Migration("20250208221007_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -30,22 +30,26 @@ namespace Samples.Orchestrator.Core.Infrastructure.Migrations
                     b.Property<Guid>("CorrelationId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("CurrentState")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("Error")
+                        .HasColumnType("text");
 
-                    b.Property<uint>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("CorrelationId");
 
-                    b.ToTable("OrderState");
+                    b.ToTable("OrderStates");
                 });
 #pragma warning restore 612, 618
         }

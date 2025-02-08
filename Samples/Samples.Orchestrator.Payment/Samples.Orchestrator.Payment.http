@@ -1,6 +1,0 @@
-@Samples.Orchestrator.Payment_HostAddress = http://localhost:5068
-
-GET {{Samples.Orchestrator.Payment_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
