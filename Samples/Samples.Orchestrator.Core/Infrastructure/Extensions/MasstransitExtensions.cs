@@ -27,7 +27,7 @@ public static class MasstransitExtensions
         
         services.AddDbContext<DbContext, OrderStateDbContext>(opt =>
         {
-            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), options => options.EnableRetryOnFailure());
         });
         
         services.AddMassTransit(cfg =>
@@ -39,10 +39,11 @@ public static class MasstransitExtensions
             
                     r.AddDbContext<SagaDbContext, OrderStateDbContext>((provider,builder) =>
                     {
-                        builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), m =>
+                        builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), options =>
                         {
-                            // m.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
-                            // m.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
+                            // options.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
+                            // options.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
+                            options.EnableRetryOnFailure();
                         });
                     });
                     
