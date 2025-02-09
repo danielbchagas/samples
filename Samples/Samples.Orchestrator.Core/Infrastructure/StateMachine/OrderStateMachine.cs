@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using System.Text.Json;
+using MassTransit;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -42,34 +43,55 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 When(PaymentSubmittedState)
                 .ThenAsync(async context =>
                 {
-                    if (context.Message.CorrelationId == Guid.Empty)
+                    try
                     {
-                        logger.LogError("Invalid CorrelationId");
-                        throw new Exception("Invalid CorrelationId");
-                    }
+                        if (context.Message.CorrelationId == Guid.Empty)
+                        {
+                            logger.LogError("Invalid CorrelationId");
+                            throw new Exception("Invalid CorrelationId");
+                        }
 
-                    if (context.Message.CurrentState == null)
-                    {
-                        logger.LogError("Invalid CurrentState");
-                        throw new Exception("Invalid CurrentState");
-                    }
+                        if (context.Message.CurrentState == null)
+                        {
+                            logger.LogError("Invalid CurrentState");
+                            throw new Exception("Invalid CurrentState");
+                        }
                     
-                    await context.Publish(new Payment.Submitted
+                        await context.Publish(new Payment.Submitted
+                        {
+                            OrderId = context.Message.OrderId
+                        });
+                    
+                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                    }
+                    catch (Exception ex)
                     {
-                        OrderId = context.Message.OrderId
-                    });
+                        logger.LogError(ex, "Error occurred while publishing Payment.Submitted event");
+                    }
                 })
                 .TransitionTo(PaymentSubmitted)
         );
 
         During(PaymentSubmitted,
 When(PaymentAcceptedState)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
                 .TransitionTo(PaymentAccepted),
             
             When(PaymentCancelledState)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
                 .TransitionTo(PaymentCancelled),
 
             When(PaymentRollbackState)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
                 .TransitionTo(PaymentRollback)
         );
         
@@ -83,6 +105,8 @@ When(PaymentAcceptedState)
                         {
                             OrderId = context.Message.OrderId
                         });
+                        
+                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                     }
                     catch (Exception ex)
                     {
@@ -94,6 +118,10 @@ When(PaymentAcceptedState)
         
         During(ShippingSubmitted,
 When(ShippingAcceptedState)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
                 .TransitionTo(ShippingAccepted),
 
             When(ShippingCancelledState)
@@ -105,6 +133,8 @@ When(ShippingAcceptedState)
                         {
                             Reason = context.Message.Reason
                         });
+                        
+                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                     }
                     catch (Exception ex)
                     {
@@ -122,6 +152,8 @@ When(ShippingAcceptedState)
                         {
                             Reason = context.Message.Reason
                         });
+                        
+                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                     }
                     catch (Exception ex)
                     {
@@ -139,6 +171,8 @@ When(ShippingAcceptedState)
                         {
                             Exception = context.Message.Exception
                         });
+                        
+                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                     }
                     catch (Exception ex)
                     {
