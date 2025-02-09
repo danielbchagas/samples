@@ -34,7 +34,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public Event<Shipping.Rollback> ShippingRollbackState { get; private set; }
     #endregion
 
-    public OrderStateMachine()
+    public OrderStateMachine(ILogger<OrderStateMachine> logger)
     {
         InstanceState(x => x.CurrentState);
 
@@ -42,7 +42,17 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 When(PaymentSubmittedState)
                 .ThenAsync(async context =>
                 {
-                    context.Saga.Init(context.Message);
+                    if (context.Message.CorrelationId == Guid.Empty)
+                    {
+                        logger.LogError("Invalid CorrelationId");
+                        throw new Exception("Invalid CorrelationId");
+                    }
+
+                    if (context.Message.CurrentState == null)
+                    {
+                        logger.LogError("Invalid CurrentState");
+                        throw new Exception("Invalid CurrentState");
+                    }
                     
                     await context.Publish(new Payment.Submitted
                     {
@@ -67,10 +77,17 @@ When(PaymentAcceptedState)
 When(PaymentAcceptedState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new Shipping.Submitted
+                    try
                     {
-                        OrderId = context.Message.OrderId
-                    });
+                        await context.Publish(new Shipping.Submitted
+                        {
+                            OrderId = context.Message.OrderId
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error occurred while publishing Shipping.Submitted event");
+                    }
                 })
                 .TransitionTo(ShippingSubmitted)
         );
@@ -82,30 +99,51 @@ When(ShippingAcceptedState)
             When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new Shipping.Cancelled
+                    try
                     {
-                        Reason = context.Message.Reason
-                    });
+                        await context.Publish(new Shipping.Cancelled
+                        {
+                            Reason = context.Message.Reason
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error occurred while publishing Shipping.Cancelled event");
+                    }
                 })
                 .TransitionTo(ShippingCancelled),
 
             When(ShippingCancelledState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new Payment.Cancelled
+                    try
                     {
-                        Reason = context.Message.Reason
-                    });
+                        await context.Publish(new Payment.Cancelled
+                        {
+                            Reason = context.Message.Reason
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error occurred while publishing Payment.Cancelled event");
+                    }
                 })
                 .TransitionTo(ShippingCancelled),
 
             When(ShippingRollbackState)
                 .ThenAsync(async context =>
                 {
-                    await context.Publish(new Payment.Rollback
+                    try
                     {
-                        Exception = context.Message.Exception
-                    });
+                        await context.Publish(new Payment.Rollback
+                        {
+                            Exception = context.Message.Exception
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Error occurred while publishing Payment.Rollback event");
+                    }
                 })
                 .TransitionTo(ShippingRollback)
         );

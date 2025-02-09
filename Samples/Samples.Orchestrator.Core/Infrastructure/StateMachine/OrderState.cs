@@ -11,14 +11,5 @@ public class OrderState : SagaStateMachineInstance
     public int OrderId { get; set; }
     public string? Reason { get; set; }
     public string? Error { get; set; }
-    public DateTime? CreatedAt { get; set; }
-
-    public void Init(SagaEvent message)
-    {
-        CorrelationId = message.CorrelationId == Guid.Empty ? NewId.NextGuid() : message.CorrelationId;
-        CurrentState = message.CurrentState;
-        
-        OrderId = message.OrderId;
-        CreatedAt = DateTime.UtcNow;
-    }
+    public DateTime CreatedAt { get; set; }
 }

@@ -1,8 +1,8 @@
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
-using Samples.Orchestrator.Core.Infrastructure.Database;
 using Samples.Orchestrator.Core.Infrastructure.Extensions;
+using Samples.Orchestrator.Core.Transport.Payment;
+using Samples.Orchestrator.Core.Transport.Shipping;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -42,36 +42,44 @@ app.UseHttpsRedirection();
 //     .WithName("find-order-states-by-state")
 //     .WithOpenApi();
 
-app.MapPost("/payment-submitted", async ([FromServices] IPublishEndpoint producer, Payment.Submitted data) =>
+app.MapPost("/payment-submitted", async ([FromServices] IPublishEndpoint producer, CreatePayment data) =>
     {
-        await producer.Publish<Payment.Submitted>(data);
+        var payment = data.MapToSubmitted();
+        
+        await producer.Publish<Payment.Submitted>(payment);
         return Results.Accepted();
     })
     .WithName("Payment Submitted")
     .WithOpenApi();
 
-app.MapPost("/payment-cancelled", async ([FromServices] IPublishEndpoint producer, Payment.Cancelled data) =>
+app.MapPost("/payment-cancelled", async ([FromServices] IPublishEndpoint producer, CancellPayment data) =>
     {
-        await producer.Publish<Payment.Cancelled>(data);
+        var cancelled = data.MapToCancelled();
+        
+        await producer.Publish<Payment.Cancelled>(cancelled);
         return Results.Accepted();
     })
     .WithName("Payment Cancelled")
     .WithOpenApi();
 
-// app.MapPost("/shipping-submitted", async ([FromServices] ITopicProducer<Shipping.Submitted> producer, Shipping.Submitted data) =>
-//     {
-//         await producer.Produce(data);
-//         return Results.Accepted();
-//     })
-//     .WithName("Shipping Submitted")
-//     .WithOpenApi();
+app.MapPost("/shipping-submitted", async ([FromServices] IPublishEndpoint producer, CreateShipping data) =>
+    {
+        var payment = data.MapToSubmitted();
+        
+        await producer.Publish<Shipping.Submitted>(payment);
+        return Results.Accepted();
+    })
+    .WithName("Shipping Submitted")
+    .WithOpenApi();
 
-// app.MapPost("/shipping-cancelled", async ([FromServices] ITopicProducer<Shipping.Cancelled> producer, Shipping.Cancelled data) =>
-//     {
-//         await producer.Produce(data);
-//         return Results.Accepted();
-//     })
-//     .WithName("Shipping Cancelled")
-//     .WithOpenApi();
+app.MapPost("/shipping-cancelled", async ([FromServices] IPublishEndpoint producer, CancellShipping data) =>
+    {
+        var cancelled = data.MapToCancelled();
+        
+        await producer.Publish<Shipping.Cancelled>(cancelled);
+        return Results.Accepted();
+    })
+    .WithName("Shipping Cancelled")
+    .WithOpenApi();
 
 app.Run();

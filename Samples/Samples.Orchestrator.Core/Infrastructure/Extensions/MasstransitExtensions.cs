@@ -59,22 +59,12 @@ public static class MasstransitExtensions
                 });
                 
                 #region Payment
-                cfg.Publish<Payment.Submitted>(p =>
+                cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
                 {
-                    p.BindQueue("orchestrator", settings.Endpoints.PaymentSubmitted, config =>
-                    {
-                        config.RoutingKey = "payment";
-                        config.ExchangeType = ExchangeType.Direct;
-                    });
-                });
-                
-                cfg.Publish<Payment.Cancelled>(p =>
-                {
-                    p.BindQueue("orchestrator", settings.Endpoints.PaymentCancelled, config =>
-                    {
-                        config.RoutingKey = "payment";
-                        config.ExchangeType = ExchangeType.Direct;
-                    });
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Payment.Submitted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
                 });
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
@@ -92,25 +82,23 @@ public static class MasstransitExtensions
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
+                
+                cfg.ReceiveEndpoint(settings.Endpoints.PaymentCancelled, e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Payment.Cancelled>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
                 #endregion
 
                 #region Shipping
-                cfg.Publish<Shipping.Submitted>(p =>
+                cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
                 {
-                    p.BindQueue("orchestrator", settings.Endpoints.ShippingSubmitted, config =>
-                    {
-                        config.RoutingKey = "shipping";
-                        config.ExchangeType = ExchangeType.Direct;
-                    });
-                });
-                
-                cfg.Publish<Shipping.Cancelled>(p =>
-                {
-                    p.BindQueue("orchestrator", settings.Endpoints.ShippingCancelled, config =>
-                    {
-                        config.RoutingKey = "shipping";
-                        config.ExchangeType = ExchangeType.Direct;
-                    });
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Shipping.Submitted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
                 });
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
@@ -125,6 +113,14 @@ public static class MasstransitExtensions
                 {
                     e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Shipping.Rollback>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+                
+                cfg.ReceiveEndpoint(settings.Endpoints.ShippingCancelled, e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Shipping.Cancelled>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
