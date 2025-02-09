@@ -41,8 +41,8 @@ public static class MasstransitExtensions
                     {
                         builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), m =>
                         {
-                            m.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
-                            m.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
+                            // m.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
+                            // m.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
                         });
                     });
                     

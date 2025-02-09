@@ -59,7 +59,10 @@ When(PaymentSubmittedState)
                     
                         await context.Publish(new Payment.Submitted
                         {
-                            OrderId = context.Message.OrderId
+                            CorrelationId = context.Message.CorrelationId,
+                            CurrentState = context.Message.CurrentState,
+                            OrderId = context.Message.OrderId,
+                            CreatedAt = context.Message.CreatedAt
                         });
                     
                         logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
@@ -76,13 +79,22 @@ When(PaymentSubmittedState)
 When(PaymentAcceptedState)
                 .Then(context =>
                 {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                    context.Saga.CorrelationId = context.Message.CorrelationId;
+                    context.Saga.CurrentState = context.Message.CurrentState;
+                    context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CreatedAt = context.Message.CreatedAt;
                 })
                 .TransitionTo(PaymentAccepted),
             
             When(PaymentCancelledState)
                 .Then(context =>
                 {
+                    context.Saga.CorrelationId = context.Message.CorrelationId;
+                    context.Saga.CurrentState = context.Message.CurrentState;
+                    context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CreatedAt = context.Message.CreatedAt;
+                    context.Saga.Reason = context.Message.Reason;
+                    
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentCancelled),
@@ -90,6 +102,12 @@ When(PaymentAcceptedState)
             When(PaymentRollbackState)
                 .Then(context =>
                 {
+                    context.Saga.CorrelationId = context.Message.CorrelationId;
+                    context.Saga.CurrentState = context.Message.CurrentState;
+                    context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CreatedAt = context.Message.CreatedAt;
+                    context.Saga.Error = JsonSerializer.Serialize(context.Message.Exception);
+                    
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentRollback)
@@ -97,13 +115,16 @@ When(PaymentAcceptedState)
         
         During(PaymentSubmitted, PaymentAccepted,
 When(PaymentAcceptedState)
-                .ThenAsync(async context =>
+                .PublishAsync(async context =>
                 {
                     try
                     {
                         await context.Publish(new Shipping.Submitted
                         {
-                            OrderId = context.Message.OrderId
+                            CorrelationId = context.Message.CorrelationId,
+                            CurrentState = context.Message.CurrentState,
+                            OrderId = context.Message.OrderId,
+                            CreatedAt = context.Message.CreatedAt
                         });
                         
                         logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
@@ -112,6 +133,8 @@ When(PaymentAcceptedState)
                     {
                         logger.LogError(ex, "Error occurred while publishing Shipping.Submitted event");
                     }
+
+                    return context;
                 })
                 .TransitionTo(ShippingSubmitted)
         );
@@ -120,18 +143,27 @@ When(PaymentAcceptedState)
 When(ShippingAcceptedState)
                 .Then(context =>
                 {
+                    context.Saga.CorrelationId = context.Message.CorrelationId;
+                    context.Saga.CurrentState = context.Message.CurrentState;
+                    context.Saga.OrderId = context.Message.OrderId;
+                    context.Saga.CreatedAt = context.Message.CreatedAt;
+                    
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(ShippingAccepted),
 
             When(ShippingCancelledState)
-                .ThenAsync(async context =>
+                .PublishAsync(async context =>
                 {
                     try
                     {
                         await context.Publish(new Shipping.Cancelled
                         {
-                            Reason = context.Message.Reason
+                            CorrelationId = context.Message.CorrelationId,
+                            CurrentState = context.Message.CurrentState,
+                            OrderId = context.Message.OrderId,
+                            Reason = context.Message.Reason,
+                            CreatedAt = context.Message.CreatedAt
                         });
                         
                         logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
@@ -140,16 +172,22 @@ When(ShippingAcceptedState)
                     {
                         logger.LogError(ex, "Error occurred while publishing Shipping.Cancelled event");
                     }
+                    
+                    return context;
                 })
                 .TransitionTo(ShippingCancelled),
 
             When(ShippingCancelledState)
-                .ThenAsync(async context =>
+                .PublishAsync(async context =>
                 {
                     try
                     {
                         await context.Publish(new Payment.Cancelled
                         {
+                            CorrelationId = context.Message.CorrelationId,
+                            CurrentState = context.Message.CurrentState,
+                            OrderId = context.Message.OrderId,
+                            CreatedAt = context.Message.CreatedAt,
                             Reason = context.Message.Reason
                         });
                         
@@ -159,16 +197,22 @@ When(ShippingAcceptedState)
                     {
                         logger.LogError(ex, "Error occurred while publishing Payment.Cancelled event");
                     }
+                    
+                    return context;
                 })
                 .TransitionTo(ShippingCancelled),
 
             When(ShippingRollbackState)
-                .ThenAsync(async context =>
+                .PublishAsync(async context =>
                 {
                     try
                     {
                         await context.Publish(new Payment.Rollback
                         {
+                            CorrelationId = context.Message.CorrelationId,
+                            CurrentState = context.Message.CurrentState,
+                            OrderId = context.Message.OrderId,
+                            CreatedAt = context.Message.CreatedAt,
                             Exception = context.Message.Exception
                         });
                         
@@ -178,6 +222,8 @@ When(ShippingAcceptedState)
                     {
                         logger.LogError(ex, "Error occurred while publishing Payment.Rollback event");
                     }
+                    
+                    return context;
                 })
                 .TransitionTo(ShippingRollback)
         );
