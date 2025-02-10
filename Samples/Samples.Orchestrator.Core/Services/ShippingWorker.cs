@@ -17,6 +17,8 @@ public class ShippingWorker(ILogger<ShippingWorker> logger, IServiceScopeFactory
                 CorrelationId = NewId.NextGuid(),
                 CurrentState = "Initial",
                 OrderId = new Random().Next(int.MinValue, int.MaxValue),
+                Reason = null,
+                Error = null,
                 CreatedAt = DateTime.Now
             }, stoppingToken);
         

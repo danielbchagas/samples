@@ -39,9 +39,29 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     {
         InstanceState(x => x.CurrentState);
 
+        Event(() => PaymentSubmittedState);
+        Event(() => PaymentAcceptedState);
+        Event(() => PaymentCancelledState);
+        Event(() => PaymentRollbackState);
+
+        Event(() => ShippingSubmittedState);
+        Event(() => ShippingAcceptedState);
+        Event(() => ShippingCancelledState);
+        Event(() => ShippingRollbackState);
+
+        State(() => PaymentSubmitted);
+        State(() => PaymentAccepted);
+        State(() => PaymentCancelled);
+        State(() => PaymentRollback);
+
+        State(() => ShippingSubmitted);
+        State(() => ShippingAccepted);
+        State(() => ShippingCancelled);
+        State(() => ShippingRollback);
+
         Initially(
-When(PaymentSubmittedState)
-                .ThenAsync(async context =>
+            When(PaymentSubmittedState)
+                .Then(context =>
                 {
                     try
                     {
@@ -50,20 +70,14 @@ When(PaymentSubmittedState)
                             logger.LogError("Invalid CorrelationId");
                             throw new Exception("Invalid CorrelationId");
                         }
-
+                
                         if (context.Message.CurrentState == null)
                         {
                             logger.LogError("Invalid CurrentState");
                             throw new Exception("Invalid CurrentState");
                         }
-                    
-                        await context.Publish(new Payment.Submitted
-                        {
-                            CorrelationId = context.Message.CorrelationId,
-                            CurrentState = context.Message.CurrentState,
-                            OrderId = context.Message.OrderId,
-                            CreatedAt = context.Message.CreatedAt
-                        });
+
+                        context.Saga.Initialize(context.Message);
                     
                         logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                     }
@@ -72,29 +86,27 @@ When(PaymentSubmittedState)
                         logger.LogError(ex, "Error occurred while publishing Payment.Submitted event");
                     }
                 })
-                .TransitionTo(PaymentSubmitted)
-        );
-
-        During(PaymentSubmitted,
-When(PaymentAcceptedState)
+                .Produce(context => context.Init<Payment.Submitted>(new
+                {
+                    context.Message.CorrelationId,
+                    context.Message.CurrentState,
+                    context.Message.OrderId,
+                    context.Message.Reason,
+                    context.Message.Error,
+                    context.Message.CreatedAt,
+                }))
+                .TransitionTo(PaymentSubmitted),
+            
+            When(PaymentAcceptedState)
                 .Then(context =>
                 {
-                    context.Saga.CorrelationId = context.Message.CorrelationId;
-                    context.Saga.CurrentState = context.Message.CurrentState;
-                    context.Saga.OrderId = context.Message.OrderId;
-                    context.Saga.CreatedAt = context.Message.CreatedAt;
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentAccepted),
             
             When(PaymentCancelledState)
                 .Then(context =>
                 {
-                    context.Saga.CorrelationId = context.Message.CorrelationId;
-                    context.Saga.CurrentState = context.Message.CurrentState;
-                    context.Saga.OrderId = context.Message.OrderId;
-                    context.Saga.CreatedAt = context.Message.CreatedAt;
-                    context.Saga.Reason = context.Message.Reason;
-                    
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentCancelled),
@@ -102,128 +114,46 @@ When(PaymentAcceptedState)
             When(PaymentRollbackState)
                 .Then(context =>
                 {
-                    context.Saga.CorrelationId = context.Message.CorrelationId;
-                    context.Saga.CurrentState = context.Message.CurrentState;
-                    context.Saga.OrderId = context.Message.OrderId;
-                    context.Saga.CreatedAt = context.Message.CreatedAt;
-                    context.Saga.Error = JsonSerializer.Serialize(context.Message.Exception);
-                    
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentRollback)
         );
-        
-        During(PaymentSubmitted, PaymentAccepted,
-When(PaymentAcceptedState)
-                .PublishAsync(async context =>
-                {
-                    try
-                    {
-                        await context.Publish(new Shipping.Submitted
-                        {
-                            CorrelationId = context.Message.CorrelationId,
-                            CurrentState = context.Message.CurrentState,
-                            OrderId = context.Message.OrderId,
-                            CreatedAt = context.Message.CreatedAt
-                        });
-                        
-                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error occurred while publishing Shipping.Submitted event");
-                    }
 
-                    return context;
-                })
-                .TransitionTo(ShippingSubmitted)
-        );
-        
-        During(ShippingSubmitted,
-When(ShippingAcceptedState)
+        During(PaymentSubmitted, PaymentAccepted,
+            When(PaymentAcceptedState)
                 .Then(context =>
                 {
-                    context.Saga.CorrelationId = context.Message.CorrelationId;
-                    context.Saga.CurrentState = context.Message.CurrentState;
-                    context.Saga.OrderId = context.Message.OrderId;
-                    context.Saga.CreatedAt = context.Message.CreatedAt;
-                    
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
+                .Produce(context => context.Init<Shipping.Submitted>(new
+                {
+                    context.Message.CorrelationId,
+                    context.Message.CurrentState,
+                    context.Message.OrderId,
+                    context.Message.Reason,
+                    context.Message.Error,
+                    context.Message.CreatedAt,
+                }))
+                .TransitionTo(ShippingSubmitted),
+
+            When(ShippingAcceptedState)
+                .Then(context =>
+                {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(ShippingAccepted),
 
             When(ShippingCancelledState)
-                .PublishAsync(async context =>
+                .Then(context =>
                 {
-                    try
-                    {
-                        await context.Publish(new Shipping.Cancelled
-                        {
-                            CorrelationId = context.Message.CorrelationId,
-                            CurrentState = context.Message.CurrentState,
-                            OrderId = context.Message.OrderId,
-                            Reason = context.Message.Reason,
-                            CreatedAt = context.Message.CreatedAt
-                        });
-                        
-                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error occurred while publishing Shipping.Cancelled event");
-                    }
-                    
-                    return context;
-                })
-                .TransitionTo(ShippingCancelled),
-
-            When(ShippingCancelledState)
-                .PublishAsync(async context =>
-                {
-                    try
-                    {
-                        await context.Publish(new Payment.Cancelled
-                        {
-                            CorrelationId = context.Message.CorrelationId,
-                            CurrentState = context.Message.CurrentState,
-                            OrderId = context.Message.OrderId,
-                            CreatedAt = context.Message.CreatedAt,
-                            Reason = context.Message.Reason
-                        });
-                        
-                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error occurred while publishing Payment.Cancelled event");
-                    }
-                    
-                    return context;
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(ShippingCancelled),
 
             When(ShippingRollbackState)
-                .PublishAsync(async context =>
+                .Then(context =>
                 {
-                    try
-                    {
-                        await context.Publish(new Payment.Rollback
-                        {
-                            CorrelationId = context.Message.CorrelationId,
-                            CurrentState = context.Message.CurrentState,
-                            OrderId = context.Message.OrderId,
-                            CreatedAt = context.Message.CreatedAt,
-                            Exception = context.Message.Exception
-                        });
-                        
-                        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Error occurred while publishing Payment.Rollback event");
-                    }
-                    
-                    return context;
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(ShippingRollback)
         );

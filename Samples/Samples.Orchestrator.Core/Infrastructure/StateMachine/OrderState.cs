@@ -12,4 +12,14 @@ public class OrderState : SagaStateMachineInstance
     public string? Reason { get; set; }
     public string? Error { get; set; }
     public DateTime CreatedAt { get; set; }
+    
+    public void Initialize<T>(T message) where T : SagaEvent
+    {
+        CorrelationId = message.CorrelationId;
+        CurrentState = message.CurrentState;
+        OrderId = message.OrderId;
+        Reason = message.Reason;
+        Error = message.Error;
+        CreatedAt = DateTime.UtcNow;
+    }
 }
