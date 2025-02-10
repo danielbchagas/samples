@@ -60,13 +60,13 @@ public static class MasstransitExtensions
                 });
                 
                 #region Payment
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Payment.Submitted>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+                // cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
+                // {
+                //     e.ExchangeType = ExchangeType.Direct;
+                //     e.Bind<Payment.Submitted>();
+                //     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                //     e.ConfigureSaga<OrderState>(context);
+                // });
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
                 {
@@ -94,13 +94,13 @@ public static class MasstransitExtensions
                 #endregion
 
                 #region Shipping
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
-                {
-                    e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Shipping.Submitted>();
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+                // cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
+                // {
+                //     e.ExchangeType = ExchangeType.Direct;
+                //     e.Bind<Shipping.Submitted>();
+                //     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                //     e.ConfigureSaga<OrderState>(context);
+                // });
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
                 {
