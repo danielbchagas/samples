@@ -8,7 +8,7 @@ public record SagaEvent : ISaga
     public string? CurrentState { get; set; }
     
     public int OrderId { get; set; }
-    public required string Reason { get; set; }
-    public required string Error { get; set; }
+    public required string? Reason { get; set; }
+    public required string? Error { get; set; }
     public DateTime CreatedAt { get; set; }
 }
