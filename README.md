@@ -1,6 +1,4 @@
-# E-Shop
-
-Exemplo de máquina de estados
+# Exemplo de Máquina de Estados
 
 ## Requisitos
 
