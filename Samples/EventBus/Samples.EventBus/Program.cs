@@ -11,9 +11,9 @@ builder.Services.AddSingleton(eventBus);
 builder.Services.AddSingleton<SubmittedHandler>();
 var serviceProvider = builder.Services.BuildServiceProvider();
 
-// Obter handler e assinar evento
-var produtoCriadoHandler = serviceProvider.GetRequiredService<SubmittedHandler>();
-eventBus.OnEventPublished += produtoCriadoHandler.OnSubmitted!;
+// Register the handler and subscribe to the event (eventBus)
+var submittedHandler = serviceProvider.GetRequiredService<SubmittedHandler>();
+eventBus.OnEventPublished += submittedHandler.OnSubmitted!;
 
 var host = builder.Build();
 host.Run();
