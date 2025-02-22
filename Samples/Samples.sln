@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Orchestrator.Core", "Samples.Orchestrator.Core\Samples.Orchestrator.Core.csproj", "{9226F241-9D73-4F99-A047-70E46FD21E83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Orchestrator.Core", "Orchestrator\Samples.Orchestrator.Core\Samples.Orchestrator.Core.csproj", "{9226F241-9D73-4F99-A047-70E46FD21E83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Orchestrator", "Orchestrator", "{5F82E0F1-FC81-48E9-AB3B-2740705A9D66}"
 EndProject
@@ -8,7 +8,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7519F2A0-378
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7D74B9CF-E460-40B5-9E40-95CC648FC216}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Orchestrator.Tests", "Samples.Orchestrator.Tests\Samples.Orchestrator.Tests.csproj", "{E584DF34-4FEF-4FA2-BFE6-215725F7DD86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Orchestrator.Tests", "Orchestrator\Samples.Orchestrator.Tests\Samples.Orchestrator.Tests.csproj", "{E584DF34-4FEF-4FA2-BFE6-215725F7DD86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.EventBus", "EventBus\Samples.EventBus\Samples.EventBus.csproj", "{DA45C652-5072-4842-BF1A-BEF1243D4954}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EventBus", "EventBus", "{8344DA29-A3E4-4D85-8278-80C5D41423E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5C0C731E-464B-435B-A4AD-E4F02EDBBDAB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,11 +30,17 @@ Global
 		{E584DF34-4FEF-4FA2-BFE6-215725F7DD86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E584DF34-4FEF-4FA2-BFE6-215725F7DD86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E584DF34-4FEF-4FA2-BFE6-215725F7DD86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA45C652-5072-4842-BF1A-BEF1243D4954}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA45C652-5072-4842-BF1A-BEF1243D4954}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA45C652-5072-4842-BF1A-BEF1243D4954}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA45C652-5072-4842-BF1A-BEF1243D4954}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7519F2A0-378D-4895-9C82-A421BF730494} = {5F82E0F1-FC81-48E9-AB3B-2740705A9D66}
 		{9226F241-9D73-4F99-A047-70E46FD21E83} = {7519F2A0-378D-4895-9C82-A421BF730494}
 		{7D74B9CF-E460-40B5-9E40-95CC648FC216} = {5F82E0F1-FC81-48E9-AB3B-2740705A9D66}
 		{E584DF34-4FEF-4FA2-BFE6-215725F7DD86} = {7D74B9CF-E460-40B5-9E40-95CC648FC216}
+		{5C0C731E-464B-435B-A4AD-E4F02EDBBDAB} = {8344DA29-A3E4-4D85-8278-80C5D41423E6}
+		{DA45C652-5072-4842-BF1A-BEF1243D4954} = {5C0C731E-464B-435B-A4AD-E4F02EDBBDAB}
 	EndGlobalSection
 EndGlobal
