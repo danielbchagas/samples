@@ -26,18 +26,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/order-states/{id}", ([FromServices] OrderStateDbContext context, [FromQuery] Guid id) =>
+app.MapGet("/order-states/{id}", async ([FromServices] OrderStateDbContext context, [FromQuery] int id) =>
     {
-        var result = context.OrderStates.FindAsync(id);
-        return Results.Ok(result);
+        var result = await context.OrderStates.FirstOrDefaultAsync(x => x.OrderId == id);
+        
+        return result switch
+        {
+            null => Results.NotFound(),
+            _ => Results.Ok(result)
+        };
     })
     .WithName("Get Order")
     .WithOpenApi();
 
-app.MapGet("/order-states/{page}/{pageSize}", ([FromServices] OrderStateDbContext context, [FromQuery] int page, int pageSize) =>
+app.MapGet("/order-states/{page}/{pageSize}", async ([FromServices] OrderStateDbContext context, [FromQuery] int page, int pageSize) =>
     {
-        var result = context.OrderStates.AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize);
-        return Results.Ok(result);
+        var result = await context.OrderStates.AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return result switch
+        {
+            null => Results.NotFound(),
+            _ => Results.Ok(result)
+        };
     })
     .WithName("Get Orders")
     .WithOpenApi();
