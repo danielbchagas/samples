@@ -1,4 +1,3 @@
-
 ## Componentes Principais
 
 ### EventBus
@@ -33,7 +32,13 @@ O componente Orchestrator coordena e gerencia os fluxos de trabalho e processos 
 
 ## Executando o Projeto
 
-Para executar o projeto, utilize o seguinte comando:
+Para executar o projeto EventBus, utilize o seguinte comando:
 
 ```sh
-dotnet run --project Samples/EventBus/Samples.EventBus.csproj# Samples
+dotnet run --project Samples/EventBus/Samples.EventBus.csproj
+```
+
+Para executar o projeto Orchestrator, utilize o seguinte comando:
+
+```sh
+dotnet run --project Samples/Orchestrator/Samples.Orchestrator.csproj
