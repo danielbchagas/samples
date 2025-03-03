@@ -94,7 +94,7 @@
                 );
 
                 // Step 3: Payment Submitted -> Payment Accepted -> Shipping Submitted
-                During(PaymentSubmitted, PaymentAccepted,
+                During(PaymentAccepted,
                     When(ShippingSubmittedState)
                         .Then(context =>
                         {
@@ -104,21 +104,7 @@
                 );
 
                 // Step 4: Payment Submitted -> Payment Accepted -> Shipping Submitted
-                During(PaymentSubmitted, PaymentAccepted, ShippingSubmitted,
-                    When(PaymentCancelledState)
-                        .Then(context =>
-                        {
-                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                        })
-                        .TransitionTo(PaymentCancelled),
-
-                    When(PaymentRollbackState)
-                        .Then(context =>
-                        {
-                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                        })
-                        .TransitionTo(PaymentRollback),
-
+                During(ShippingSubmitted,
                     When(ShippingAcceptedState)
                         .Then(context =>
                         {
@@ -131,6 +117,11 @@
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
+                        .TransitionTo(PaymentCancelled)
+                        .Then(context =>
+                        {
+                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                        })
                         .TransitionTo(ShippingCancelled),
 
                     When(ShippingRollbackState)
@@ -138,38 +129,38 @@
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(ShippingRollback)
-                );
-
-                // Step 5: Payment Submitted -> Payment Accepted -> Shipping Submitted -> Shipping Accepted
-                During(PaymentSubmitted, PaymentAccepted, ShippingSubmitted, ShippingAccepted,
+                        .TransitionTo(PaymentRollback)
+                        .Then(context =>
+                        {
+                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                        })
+                        .TransitionTo(ShippingRollback),
+                    
+                    // Payment Cancelled <- Shipping Cancelled <- Shipping Submitted
                     When(PaymentCancelledState)
+                        .Then(context =>
+                        {
+                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                        })
+                        .TransitionTo(ShippingCancelled)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
                         .TransitionTo(PaymentCancelled),
 
+                    // Payment Rollback <- Shipping Rollback <- Shipping Submitted
                     When(PaymentRollbackState)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(PaymentRollback),
-
-                    When(ShippingCancelledState)
-                        .Then(context =>
-                        {
-                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                        })
-                        .TransitionTo(ShippingCancelled),
-
-                    When(ShippingRollbackState)
-                        .Then(context =>
-                        {
-                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                        })
                         .TransitionTo(ShippingRollback)
+                        .Then(context =>
+                        {
+                            logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                        })
+                        .TransitionTo(PaymentRollback)
                 );
 
                 SetCompletedWhenFinalized();

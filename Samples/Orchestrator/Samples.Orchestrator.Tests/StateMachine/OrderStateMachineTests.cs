@@ -73,35 +73,6 @@ public class OrderStateMachineTests
     }
 
     [Fact]
-    public async Task Should_TransitionTo_PaymentCancelled_When_PaymentCancelledEventReceivedAfterAccepted()
-    {
-        // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
-        await _harness.Start();
-
-        var sagaId = NewId.NextGuid();
-
-        // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, Reason = CancellationMessage });
-
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
-
-        // Assert
-        instance.Should().NotBeNull();
-        sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Shipping.Accepted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Shipping.Accepted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Payment.Cancelled>().Any().Should().BeTrue();
-
-        await _harness.Stop();
-    }
-
-    [Fact]
     public async Task Should_TransitionTo_PaymentRollback_When_PaymentRollbackEventReceived()
     {
         // Arrange
@@ -121,35 +92,6 @@ public class OrderStateMachineTests
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Rollback>().Any().Should().BeTrue();
                 
-        await _harness.Stop();
-    }
-
-    [Fact]
-    public async Task Should_TransitionTo_PaymentCancelled_When_PaymentRollbackEventReceivedAfterAccepted()
-    {
-        // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
-        await _harness.Start();
-
-        var sagaId = NewId.NextGuid();
-
-        // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId });
-        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, Reason = RollbackMessage });
-
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
-
-        // Assert
-        instance.Should().NotBeNull();
-        sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Shipping.Submitted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Shipping.Accepted>().Any().Should().BeTrue();
-        sagaHarness.Consumed.Select<Payment.Rollback>().Any().Should().BeTrue();
-
         await _harness.Stop();
     }
 
