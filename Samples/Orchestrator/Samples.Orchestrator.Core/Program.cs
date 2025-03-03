@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Samples.Orchestrator.Core.Infrastructure.Database;
 using Samples.Orchestrator.Core.Infrastructure.Extensions;
-using Samples.Orchestrator.Core.Services;
-using Samples.Orchestrator.Core.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +11,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddMasstransit(builder.Configuration);
-builder.Services.AddWorker();
 
 var app = builder.Build();
 
