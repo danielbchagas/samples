@@ -1,15 +1,14 @@
 ﻿#define RABBITMQ
 
-using System.Reflection;
 using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
-using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
-using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 using Samples.Orchestrator.Core.Domain.Settings;
 using Samples.Orchestrator.Core.Infrastructure.Database;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
+using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
+using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
 namespace Samples.Orchestrator.Core.Infrastructure.Extensions;
 
@@ -58,16 +57,16 @@ public static class MasstransitExtensions
                     h.Username(settings.Username);
                     h.Password(settings.Password);
                 });
-                
+
                 #region Payment
-                // cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
-                // {
-                //     e.ExchangeType = ExchangeType.Direct;
-                //     e.Bind<Payment.Submitted>();
-                //     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                //     e.ConfigureSaga<OrderState>(context);
-                // });
-                
+                cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Payment.Submitted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
@@ -94,14 +93,14 @@ public static class MasstransitExtensions
                 #endregion
 
                 #region Shipping
-                // cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
-                // {
-                //     e.ExchangeType = ExchangeType.Direct;
-                //     e.Bind<Shipping.Submitted>();
-                //     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                //     e.ConfigureSaga<OrderState>(context);
-                // });
-                
+                cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
+                {
+                    e.ExchangeType = ExchangeType.Direct;
+                    e.Bind<Shipping.Submitted>();
+                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureSaga<OrderState>(context);
+                });
+
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
