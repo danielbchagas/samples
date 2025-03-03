@@ -136,22 +136,28 @@
                             context.Message.Error,
                             context.Message.CreatedAt,
                         }))
-                        .TransitionTo(ShippingSubmitted),
-        
+                        .TransitionTo(ShippingSubmitted)
+                );
+
+                During(PaymentSubmitted, PaymentAccepted, ShippingSubmitted, 
                     When(ShippingAcceptedState)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(ShippingAccepted),
-        
+                        .TransitionTo(ShippingAccepted)
+                );
+
+                During(PaymentSubmitted, PaymentAccepted, ShippingSubmitted,
                     When(ShippingCancelledState)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(ShippingCancelled),
-        
+                        .TransitionTo(ShippingCancelled)
+                );
+
+                During(PaymentSubmitted, PaymentAccepted, ShippingSubmitted,
                     When(ShippingRollbackState)
                         .Then(context =>
                         {
@@ -159,7 +165,7 @@
                         })
                         .TransitionTo(ShippingRollback)
                 );
-                
+
                 SetCompletedWhenFinalized();
             }
         }
