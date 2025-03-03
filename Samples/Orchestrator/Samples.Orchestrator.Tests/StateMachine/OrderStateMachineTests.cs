@@ -13,7 +13,11 @@ public class OrderStateMachineTests
 {
     private readonly OrderStateMachine _stateMachine;
     private readonly InMemoryTestHarness _harness;
-        
+
+    private const string InitialStateMessage = "Initial submission";
+    private const string CancellationMessage = "Not enough funds";
+    private const string RollbackMessage = "Internal Server error";
+
     public OrderStateMachineTests()
     {
         var logger = new Mock<ILogger<OrderStateMachine>>();
@@ -30,11 +34,10 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
             
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentAccepted);
                 
@@ -54,11 +57,10 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
                 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = "Not enough funds", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = CancellationMessage });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
                 
@@ -78,14 +80,13 @@ public class OrderStateMachineTests
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, Reason = null, Error = null });
-        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, Reason = null, Error = null });
-        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = "Not enough funds", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, Reason = CancellationMessage });
 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
 
@@ -108,11 +109,10 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
                 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, OrderId = 1, Reason = "Payment rollback", Error = "Internal Server error" });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, Error = RollbackMessage });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
                 
@@ -132,14 +132,13 @@ public class OrderStateMachineTests
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, Reason = null, Error = null });
-        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, Reason = null, Error = null });
-        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, OrderId = 1, Reason = "Not enough funds", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, Reason = RollbackMessage });
 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
 
@@ -162,13 +161,12 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
             
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping submitted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping accepted", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingAccepted);
                 
@@ -190,13 +188,12 @@ public class OrderStateMachineTests
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping submitted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping cancelled", Error = "Internal Server error" });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted {CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Submitted {CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, Error = CancellationMessage });
 
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingCancelled);
 
@@ -218,13 +215,12 @@ public class OrderStateMachineTests
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
-        const string currentState = "initial";
 
         // Act
-        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = currentState, OrderId = 1, Reason = "Initial submission", Error = null });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1, Reason = "Payment accepted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping submitted", Error = null });
-        await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, OrderId = 1, Reason = "Shipping rollback", Error = null });
+        await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
+        await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, Error = RollbackMessage });
 
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingRollback);
 
