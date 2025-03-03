@@ -37,7 +37,7 @@ public class OrderStateMachineTests
             
         // Act
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
-        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, OrderId = 1 });
+        await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentAccepted);
                 
@@ -60,7 +60,7 @@ public class OrderStateMachineTests
                 
         // Act
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = InitialStateMessage, OrderId = 1 });
-        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, OrderId = 1, Reason = CancellationMessage });
+        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, Reason = CancellationMessage });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
                 
