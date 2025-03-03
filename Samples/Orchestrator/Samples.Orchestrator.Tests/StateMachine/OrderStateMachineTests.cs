@@ -136,8 +136,9 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Accepted {CorrelationId = sagaId });
         await _harness.Bus.Publish(new Shipping.Submitted {CorrelationId = sagaId });
         await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, Error = CancellationMessage });
+        await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, Error = CancellationMessage });
 
-        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingCancelled);
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
 
         // Assert
         instance.Should().NotBeNull();
@@ -163,8 +164,9 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId });
         await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId });
         await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, Error = RollbackMessage });
+        await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, Error = RollbackMessage });
 
-        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingRollback);
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
 
         // Assert
         instance.Should().NotBeNull();
@@ -172,6 +174,7 @@ public class OrderStateMachineTests
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Shipping.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Shipping.Rollback>().Any().Should().BeTrue();
+        sagaHarness.Consumed.Select<Payment.Rollback>().Any().Should().BeTrue();
 
         await _harness.Stop();
     }

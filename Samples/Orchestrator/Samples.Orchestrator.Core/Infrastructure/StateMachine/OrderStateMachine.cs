@@ -112,29 +112,31 @@
                         })
                         .TransitionTo(ShippingAccepted),
 
+                    // Payment Cancelled <- Shipping Cancelled <- Shipping Submitted
                     When(ShippingCancelledState)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(PaymentCancelled)
+                        .TransitionTo(ShippingCancelled)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(ShippingCancelled),
+                        .TransitionTo(PaymentCancelled),
 
+                    // Payment Rollback <- Shipping Rollback <- Shipping Submitted
                     When(ShippingRollbackState)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(PaymentRollback)
+                        .TransitionTo(ShippingRollback)
                         .Then(context =>
                         {
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
-                        .TransitionTo(ShippingRollback),
+                        .TransitionTo(PaymentRollback),
                     
                     // Payment Cancelled <- Shipping Cancelled <- Shipping Submitted
                     When(PaymentCancelledState)
