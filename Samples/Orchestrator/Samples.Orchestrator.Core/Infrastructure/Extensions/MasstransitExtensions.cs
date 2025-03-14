@@ -59,7 +59,7 @@ public static class MasstransitExtensions
                 });
                 
                 cfg.ConfigureEndpoints(context);
-                cfg.UseRawJsonDeserializer(RawSerializerOptions.All, isDefault: true);
+                cfg.UseRawJsonDeserializer(isDefault: true);
 
                 #region Payment
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
