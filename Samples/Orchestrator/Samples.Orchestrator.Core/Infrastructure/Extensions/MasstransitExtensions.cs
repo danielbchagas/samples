@@ -57,6 +57,9 @@ public static class MasstransitExtensions
                     h.Username(settings.Username);
                     h.Password(settings.Password);
                 });
+                
+                cfg.ConfigureEndpoints(context);
+                cfg.UseRawJsonDeserializer(isDefault: true);
 
                 #region Payment
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
