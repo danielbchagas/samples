@@ -23,19 +23,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/order-states/{id}", async ([FromServices] OrderStateDbContext context, [FromQuery] int id) =>
-    {
-        var result = await context.OrderStates.FirstOrDefaultAsync(x => x.OrderId == id);
-        
-        return result switch
-        {
-            null => Results.NotFound(),
-            _ => Results.Ok(result)
-        };
-    })
-    .WithName("Get Order")
-    .WithOpenApi();
-
 app.MapGet("/order-states/{page}/{pageSize}", async ([FromServices] OrderStateDbContext context, [FromQuery] int page, int pageSize) =>
     {
         var result = await context.OrderStates.AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();

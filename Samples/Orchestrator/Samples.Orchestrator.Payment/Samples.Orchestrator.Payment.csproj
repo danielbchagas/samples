@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-Samples.Orchestrator.Payment-5b6c8a4b-46bf-4e39-9ba0-c8dc4c64a3c3</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="35.6.2" />
+        <PackageReference Include="MassTransit" Version="8.3.7" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.7" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Infrastructure\Migrations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Samples.Orchestrator.Core\Samples.Orchestrator.Core.csproj" />
+    </ItemGroup>
+</Project>

@@ -64,6 +64,7 @@
                     When(PaymentSubmittedState)
                         .Then(context =>
                         {
+                            context.Saga.Initialize(context.Message);
                             logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                         })
                         .TransitionTo(PaymentSubmitted)

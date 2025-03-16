@@ -6,7 +6,7 @@ namespace Samples.Orchestrator.Core.Infrastructure.Database;
 
 public class OrderStateDbContext : SagaDbContext
 {
-    public OrderStateDbContext(DbContextOptions options) : base(options)
+    public OrderStateDbContext(DbContextOptions<OrderStateDbContext> options) : base(options)
     {
     }
     
