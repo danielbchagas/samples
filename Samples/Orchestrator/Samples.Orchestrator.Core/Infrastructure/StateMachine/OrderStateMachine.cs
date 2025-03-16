@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MassTransit;
+using Samples.Orchestrator.Core.Domain.Settings;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -70,22 +71,25 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         // Step 1: Initial State
         Initially(
             When(PaymentSubmittedState)
-                .ThenAsync(async context =>
+                .Then(context =>
                 {
                     context.Saga.Initialize(context.Message);
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    
-                    var sendEndpoint = await context.GetSendEndpoint(new Uri("queue:saga.payment.processing"));
-                    
-                    await sendEndpoint.Send<Payment.Processing>(new
-                    {
-                        CorrelationId = context.Message.CorrelationId,
-                        CurrentState = context.Message.CurrentState,
-                        Payload = context.Message.Payload,
-                        CreatedAt = context.Message.CreatedAt,
-                    });
                 })
+                // .ThenAsync(async context =>
+                // {
+                //     var sendEndpoint = await context.GetSendEndpoint(new Uri("saga.payment.processing"));
+                //     
+                //     await sendEndpoint.Send<Payment.Processing>(new
+                //     {
+                //         CorrelationId = context.Message.CorrelationId,
+                //         CurrentState = context.Message.CurrentState,
+                //         Payload = context.Message.Payload,
+                //         CreatedAt = context.Message.CreatedAt,
+                //     });
+                // })
                 .TransitionTo(PaymentSubmitted)
+                
         );
 
         // Step 2: Payment Submitted
@@ -115,21 +119,23 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         // Step 3: Payment Submitted -> Payment Accepted -> Shipping Submitted
         During(PaymentAccepted,
             When(ShippingSubmittedState)
-                .ThenAsync(async context =>
+                .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                    
-                    var sendEndpoint = await context.GetSendEndpoint(new Uri("queue:saga.shipping.processing"));
-                    
-                    await sendEndpoint.Send<Payment.Processing>(new
-                    {
-                        CorrelationId = context.Message.CorrelationId,
-                        CurrentState = context.Message.CurrentState,
-                        Payload = context.Message.Payload,
-                        CreatedAt = context.Message.CreatedAt,
-                    });
                 })
                 .TransitionTo(ShippingSubmitted)
+                // .ThenAsync(async context =>
+                // {
+                //     var sendEndpoint = await context.GetSendEndpoint(new Uri("saga.shipping.processing"));
+                //     
+                //     await sendEndpoint.Send<Shipping.Processing>(new
+                //     {
+                //         CorrelationId = context.Message.CorrelationId,
+                //         CurrentState = context.Message.CurrentState,
+                //         Payload = context.Message.Payload,
+                //         CreatedAt = context.Message.CreatedAt,
+                //     });
+                // })
         );
 
         // Step 4: Payment Submitted -> Payment Accepted -> Shipping Submitted
@@ -195,5 +201,33 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         );
 
         SetCompletedWhenFinalized();
+    }
+    
+    private static BrokerSettings BuildConfig(IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
+        
+        ArgumentNullException.ThrowIfNull(settings);
+        
+        ArgumentException.ThrowIfNullOrEmpty(settings.Host);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Port);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Username);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Password);
+        
+        ArgumentNullException.ThrowIfNull(settings.Endpoints);
+        
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentSubmitted);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentRollback);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentProcessing);
+        
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingSubmitted);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingAccepted);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingCancelled);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingRollback);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingProcessing);
+        
+        return settings;
     }
 }
