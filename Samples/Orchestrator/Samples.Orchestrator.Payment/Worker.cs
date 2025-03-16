@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Samples.Orchestrator.Payment.Infrastructure.MessageBroker;
 using Bogus;
+using Confluent.Kafka;
 using Samples.Orchestrator.Core.Domain.Events;
 using Samples.Orchestrator.Core.Domain.Events.Payment;
 
@@ -12,33 +13,30 @@ public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) :
     {
         var scope = scopeFactory.CreateScope();
         var submittedProducer = scope.ServiceProvider.GetRequiredService<SubmittedProducer>();
-        var cancelledProducer = scope.ServiceProvider.GetRequiredService<CancelledProducer>();
+        
+        logger.LogInformation("Worker started at: {time}", DateTimeOffset.Now);
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (logger.IsEnabled(LogLevel.Information))
-            {
-                logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-
             try
             {
-                var message = BuildMessage<Submitted>();
+                var message = BuildMessage();
                 await submittedProducer.PublishAsync(message, stoppingToken);
+                
+                logger.LogInformation("Published message at: {time}", DateTimeOffset.Now);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred while publishing message");
-                
-                var message = BuildMessage<Cancelled>();
-                await cancelledProducer.PublishAsync(message, stoppingToken);
+                logger.LogError(ex, "An error occurred while publishing message ate: {time}", DateTimeOffset.Now);
             }
             
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
+        
+        logger.LogInformation("Worker stopped at: {time}", DateTimeOffset.Now);
     }
 
-    private static T BuildMessage<T>() where T : SagaEvent
+    private static Submitted BuildMessage()
     {
         var payload = new Faker<JsonObject>()
             .CustomInstantiator(f => new JsonObject
@@ -50,7 +48,7 @@ public class Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory) :
             })
             .Generate();
 
-        var message = new Faker<T>()
+        var message = new Faker<Submitted>()
             .RuleFor(m => m.CorrelationId, f => f.Random.Guid())
             .RuleFor(m => m.CurrentState, "PaymentSubmitted")
             .RuleFor(m => m.Payload, payload)

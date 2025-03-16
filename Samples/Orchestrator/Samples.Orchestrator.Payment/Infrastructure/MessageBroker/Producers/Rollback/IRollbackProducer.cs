@@ -5,5 +5,5 @@ namespace Samples.Orchestrator.Payment.Infrastructure.MessageBroker;
 
 public interface IRollbackProducer
 {
-    Task PublishAsync(Rollback rollbackEvent, JsonObject payload);
+    Task PublishAsync(Rollback rollbackEvent, CancellationToken cancellationToken = default);
 }

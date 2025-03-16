@@ -6,12 +6,10 @@ namespace Samples.Orchestrator.Payment.Infrastructure.MessageBroker;
 
 public class RollbackProducer(ILogger<RollbackProducer> logger, ISendEndpointProvider sendEndpointProvider) : IRollbackProducer
 {
-    public async Task PublishAsync(Rollback rollbackEvent, JsonObject payload)
+    public async Task PublishAsync(Rollback rollbackEvent, CancellationToken cancellationToken)
     {
-        rollbackEvent.Payload = payload;
-        
         var endpoint = await sendEndpointProvider.GetSendEndpoint(new Uri("queue:saga.payment.rollback"));
-        await endpoint.Send(rollbackEvent);
+        await endpoint.Send(rollbackEvent, cancellationToken);
         
         logger.LogInformation("Rollback event published");
     }

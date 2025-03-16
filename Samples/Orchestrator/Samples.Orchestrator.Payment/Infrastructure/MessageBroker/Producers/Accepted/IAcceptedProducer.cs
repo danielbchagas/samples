@@ -5,5 +5,5 @@ namespace Samples.Orchestrator.Payment.Infrastructure.MessageBroker;
 
 public interface IAcceptedProducer
 {
-    Task PublishAsync(Accepted cancelledEvent, JsonObject payload);
+    Task PublishAsync(Accepted cancelledEvent, CancellationToken cancellationToken = default);
 }

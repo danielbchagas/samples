@@ -12,6 +12,7 @@
             public State PaymentAccepted { get; private set; }
             public State PaymentCancelled { get; private set; }
             public State PaymentRollback { get; private set; }
+            public State PaymentProcessing { get; private set; }
             #endregion
         
             #region Shipping States
@@ -19,6 +20,7 @@
             public State ShippingAccepted { get; private set; }
             public State ShippingCancelled { get; private set; }
             public State ShippingRollback { get; private set; }
+            public State ShippingProcessing { get; private set; }
             #endregion
         
             #region Payment Events
@@ -26,6 +28,7 @@
             public Event<Payment.Accepted> PaymentAcceptedState { get; private set; }
             public Event<Payment.Cancelled> PaymentCancelledState { get; private set; }
             public Event<Payment.Rollback> PaymentRollbackState { get; private set; }
+            public Event<Payment.Processing> PaymentProcessingState { get; private set; }
             #endregion
         
             #region Shipping Events
@@ -33,6 +36,7 @@
             public Event<Shipping.Accepted> ShippingAcceptedState { get; private set; }
             public Event<Shipping.Cancelled> ShippingCancelledState { get; private set; }
             public Event<Shipping.Rollback> ShippingRollbackState { get; private set; }
+            public Event<Shipping.Processing> ShippingProcessingState { get; private set; }
             #endregion
         
             public OrderStateMachine(ILogger<OrderStateMachine> logger)
@@ -43,21 +47,25 @@
                 Event(() => PaymentAcceptedState);
                 Event(() => PaymentCancelledState);
                 Event(() => PaymentRollbackState);
+                Event(() => PaymentProcessingState);
         
                 Event(() => ShippingSubmittedState);
                 Event(() => ShippingAcceptedState);
                 Event(() => ShippingCancelledState);
                 Event(() => ShippingRollbackState);
+                Event(() => ShippingProcessingState);
         
                 State(() => PaymentSubmitted);
                 State(() => PaymentAccepted);
                 State(() => PaymentCancelled);
                 State(() => PaymentRollback);
+                State(() => PaymentProcessing);
         
                 State(() => ShippingSubmitted);
                 State(() => ShippingAccepted);
                 State(() => ShippingCancelled);
                 State(() => ShippingRollback);
+                State(() => ShippingProcessing);
 
                 // Step 1: Initial State
                 Initially(
