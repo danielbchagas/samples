@@ -1,6 +1,4 @@
-﻿#define RABBITMQ
-
-using MassTransit;
+﻿using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
@@ -49,7 +47,6 @@ public static class MasstransitExtensions
                     r.UsePostgres();
                 });
             
-            #if RABBITMQ
             cfg.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(settings.Host, "/", h =>
@@ -66,7 +63,7 @@ public static class MasstransitExtensions
                     opts.PropertyNameCaseInsensitive = true;
                     return opts;
                 });
-
+                
                 #region Payment
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
                 {
@@ -135,62 +132,6 @@ public static class MasstransitExtensions
                 });
                 #endregion
             });
-            #endif
-            
-            #if KAFKA
-            cfg.AddRider(rider =>
-            {
-                rider.AddSagaStateMachine<OrderStateMachine, OrderState>();
-                
-                #region Payment
-            
-                rider.AddProducer<BuildingBlocks.Events.Payment.Submitted>("saga.pagamento.iniciar");
-                rider.AddProducer<BuildingBlocks.Events.Payment.Rollback>("saga.pagamento.rollback");
-            
-                #endregion
-            
-                #region Shipping
-            
-                rider.AddProducer<BuildingBlocks.Events.Shipping.Submitted>("saga.envio.iniciar");
-                rider.AddProducer<BuildingBlocks.Events.Shipping.Rollback>("saga.envio.rollback");
-            
-                #endregion
-                
-                rider.UsingKafka((context, k) =>
-                {
-                    k.Host("127.0.0.1:9092");
-                    
-                    #region Payment
-                    
-                    k.TopicEndpoint<BuildingBlocks.Events.Payment.Accepted>("saga.pagamento.confirmado", "saga-pagamento-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    
-                    k.TopicEndpoint<BuildingBlocks.Events.Payment.Cancelled>("saga.pagamento.cancelado", "saga-pagamento-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    #endregion
-                
-                    #region Shipping
-                    k.TopicEndpoint<BuildingBlocks.Events.Shipping.Accepted>("saga.envio.confirmado", "saga-envio-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    
-                    k.TopicEndpoint<BuildingBlocks.Events.Shipping.Cancelled>("saga.envio.cancelado", "saga-envio-group", e =>
-                    {
-                        e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                        e.ConfigureSaga<OrderState>(context);
-                    });
-                    #endregion
-                });
-            });
-            #endif
         });
             
         return services;
@@ -213,11 +154,13 @@ public static class MasstransitExtensions
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentRollback);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentProcessing);
         
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingSubmitted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingCancelled);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingRollback);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingProcessing);
         
         return settings;
     }

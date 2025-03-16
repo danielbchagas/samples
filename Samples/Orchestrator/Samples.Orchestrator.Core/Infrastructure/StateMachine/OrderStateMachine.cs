@@ -70,10 +70,20 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         // Step 1: Initial State
         Initially(
             When(PaymentSubmittedState)
-                .Then(context =>
+                .ThenAsync(async context =>
                 {
                     context.Saga.Initialize(context.Message);
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                    
+                    var sendEndpoint = await context.GetSendEndpoint(new Uri("queue:saga.payment.processing"));
+                    
+                    await sendEndpoint.Send<Payment.Processing>(new
+                    {
+                        CorrelationId = context.Message.CorrelationId,
+                        CurrentState = context.Message.CurrentState,
+                        Payload = context.Message.Payload,
+                        CreatedAt = context.Message.CreatedAt,
+                    });
                 })
                 .TransitionTo(PaymentSubmitted)
         );
@@ -105,9 +115,19 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         // Step 3: Payment Submitted -> Payment Accepted -> Shipping Submitted
         During(PaymentAccepted,
             When(ShippingSubmittedState)
-                .Then(context =>
+                .ThenAsync(async context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                    
+                    var sendEndpoint = await context.GetSendEndpoint(new Uri("queue:saga.shipping.processing"));
+                    
+                    await sendEndpoint.Send<Payment.Processing>(new
+                    {
+                        CorrelationId = context.Message.CorrelationId,
+                        CurrentState = context.Message.CurrentState,
+                        Payload = context.Message.Payload,
+                        CreatedAt = context.Message.CreatedAt,
+                    });
                 })
                 .TransitionTo(ShippingSubmitted)
         );
