@@ -40,8 +40,10 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public Event<Shipping.Processing> ShippingProcessingState { get; private set; }
     #endregion
 
-    public OrderStateMachine(ILogger<OrderStateMachine> logger)
+    public OrderStateMachine(ILogger<OrderStateMachine> logger, IConfiguration configuration)
     {
+        var settings = BuildSettings(configuration);
+        
         InstanceState(x => x.CurrentState);
 
         Event(() => PaymentSubmittedState);
@@ -203,7 +205,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         SetCompletedWhenFinalized();
     }
     
-    private static BrokerSettings BuildConfig(IConfiguration configuration)
+    private static BrokerSettings BuildSettings(IConfiguration configuration)
     {
         var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
         

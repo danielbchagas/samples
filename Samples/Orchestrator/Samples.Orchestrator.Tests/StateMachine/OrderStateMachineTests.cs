@@ -2,6 +2,8 @@
 using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
@@ -12,9 +14,8 @@ namespace Samples.Orchestrator.Tests.StateMachine;
         
 public class OrderStateMachineTests
 {
-    private readonly OrderStateMachine _stateMachine;
-    private readonly InMemoryTestHarness _harness;
-
+    private IConfiguration Configuration;
+    
     private const string PaymentSubmitted = "PaymentSubmitted";
     private const string PaymentAccepted = "PaymentAccepted";
     private const string PaymentCancelled = "PaymentCancelled";
@@ -35,17 +36,26 @@ public class OrderStateMachineTests
 
     public OrderStateMachineTests()
     {
-        var logger = new Mock<ILogger<OrderStateMachine>>();
-                
-        _stateMachine = new OrderStateMachine(logger.Object);
-        _harness = new InMemoryTestHarness();
+        Configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build();
     }
         
     [Fact]
     public async Task Should_TransitionTo_PaymentAccepted_When_PaymentAcceptedEventReceived()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
@@ -68,7 +78,17 @@ public class OrderStateMachineTests
     public async Task Should_TransitionTo_PaymentCancelled_When_PaymentCancelledEventReceived()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
@@ -91,7 +111,17 @@ public class OrderStateMachineTests
     public async Task Should_TransitionTo_PaymentRollback_When_PaymentRollbackEventReceived()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
@@ -114,7 +144,17 @@ public class OrderStateMachineTests
     public async Task Should_TransitionTo_ShippingAccepted_When_ShippingAcceptedEventReceived()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
@@ -141,7 +181,17 @@ public class OrderStateMachineTests
     public async Task Should_TransitionTo_ShippingCancelled_When_ShippingCancelled()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
@@ -169,7 +219,17 @@ public class OrderStateMachineTests
     public async Task Should_TransitionTo_ShippingRollback_When_ShippingRollback()
     {
         // Arrange
-        var sagaHarness = _harness.StateMachineSaga<OrderState, OrderStateMachine>(_stateMachine);
+        await using var provider = new ServiceCollection()
+            .AddSingleton(Configuration)
+            .AddMassTransitTestHarness(config =>
+            {
+                config.AddSagaStateMachine<OrderStateMachine, OrderState>();
+            })
+            .BuildServiceProvider(true);
+
+        var _harness = provider.GetRequiredService<ITestHarness>();
+        
+        var sagaHarness = _harness.GetSagaStateMachineHarness<OrderStateMachine, OrderState>();
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
