@@ -70,7 +70,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         State(() => ShippingRollback);
         State(() => ShippingProcessing);
 
-        // Step 1: Initial State
         Initially(
             When(PaymentSubmittedState)
                 .Then(context =>
@@ -78,24 +77,16 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                     context.Saga.Initialize(context.Message);
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                // .ThenAsync(async context =>
-                // {
-                //     var sendEndpoint = await context.GetSendEndpoint(new Uri("saga.payment.processing"));
-                //     
-                //     await sendEndpoint.Send<Payment.Processing>(new
-                //     {
-                //         CorrelationId = context.Message.CorrelationId,
-                //         CurrentState = context.Message.CurrentState,
-                //         Payload = context.Message.Payload,
-                //         CreatedAt = context.Message.CreatedAt,
-                //     });
-                // })
                 .TransitionTo(PaymentSubmitted)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
+                .TransitionTo(PaymentProcessing)
                 
         );
 
-        // Step 2: Payment Submitted
-        During(PaymentSubmitted,
+        During(PaymentProcessing,
             When(PaymentAcceptedState)
                 .Then(context =>
                 {
@@ -117,8 +108,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
                 .TransitionTo(PaymentRollback)
         );
-
-        // Step 3: Payment Submitted -> Payment Accepted -> Shipping Submitted
+        
         During(PaymentAccepted,
             When(ShippingSubmittedState)
                 .Then(context =>
@@ -126,21 +116,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(ShippingSubmitted)
-                // .ThenAsync(async context =>
-                // {
-                //     var sendEndpoint = await context.GetSendEndpoint(new Uri("saga.shipping.processing"));
-                //     
-                //     await sendEndpoint.Send<Shipping.Processing>(new
-                //     {
-                //         CorrelationId = context.Message.CorrelationId,
-                //         CurrentState = context.Message.CurrentState,
-                //         Payload = context.Message.Payload,
-                //         CreatedAt = context.Message.CreatedAt,
-                //     });
-                // })
         );
 
-        // Step 4: Payment Submitted -> Payment Accepted -> Shipping Submitted
         During(ShippingSubmitted,
             When(ShippingAcceptedState)
                 .Then(context =>
@@ -149,7 +126,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
                 .TransitionTo(ShippingAccepted),
 
-            // Payment Cancelled <- Shipping Cancelled <- Shipping Submitted
             When(ShippingCancelledState)
                 .Then(context =>
                 {
@@ -162,7 +138,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
                 .TransitionTo(PaymentCancelled),
 
-            // Payment Rollback <- Shipping Rollback <- Shipping Submitted
             When(ShippingRollbackState)
                 .Then(context =>
                 {
@@ -175,7 +150,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
                 .TransitionTo(PaymentRollback),
             
-            // Payment Cancelled <- Shipping Cancelled <- Shipping Submitted
             When(PaymentCancelledState)
                 .Then(context =>
                 {
@@ -188,7 +162,6 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 })
                 .TransitionTo(PaymentCancelled),
 
-            // Payment Rollback <- Shipping Rollback <- Shipping Submitted
             When(PaymentRollbackState)
                 .Then(context =>
                 {
