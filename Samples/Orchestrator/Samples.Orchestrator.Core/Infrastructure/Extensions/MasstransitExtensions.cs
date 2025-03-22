@@ -67,7 +67,7 @@ public static class MasstransitExtensions
                 #region Payment
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Payment.Submitted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -75,7 +75,7 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Payment.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -83,7 +83,7 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentRollback, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Payment.Rollback>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -91,7 +91,7 @@ public static class MasstransitExtensions
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.PaymentCancelled, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Payment.Cancelled>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -101,7 +101,7 @@ public static class MasstransitExtensions
                 #region Shipping
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Shipping.Submitted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -109,7 +109,7 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Shipping.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -117,7 +117,7 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingRollback, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Shipping.Rollback>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
@@ -125,7 +125,7 @@ public static class MasstransitExtensions
                 
                 cfg.ReceiveEndpoint(settings.Endpoints.ShippingCancelled, e =>
                 {
-                    e.ExchangeType = ExchangeType.Fanout;
+                    e.ExchangeType = ExchangeType.Direct;
                     e.Bind<Shipping.Cancelled>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
