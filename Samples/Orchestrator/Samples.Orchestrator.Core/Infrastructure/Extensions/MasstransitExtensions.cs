@@ -55,7 +55,6 @@ public static class MasstransitExtensions
                     h.Password(settings.Password);
                 });
                 
-                cfg.ConfigureEndpoints(context);
                 cfg.UseRawJsonDeserializer(isDefault: true);
                 
                 cfg.ConfigureJsonSerializerOptions(opts =>
@@ -65,71 +64,122 @@ public static class MasstransitExtensions
                 });
                 
                 #region Payment
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentSubmitted, e =>
+                cfg.ReceiveEndpoint("payment-submitted", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Payment.Submitted>();
+                    
+                    e.Bind("exchange.payment-submitted", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.payment-submitted";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentAccepted, e =>
+                cfg.ReceiveEndpoint("payment-accepted", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
+                    
+                    e.Bind("exchange.payment-accepted", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.payment-accepted";
+                    });
+                    
                     e.Bind<Payment.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentRollback, e =>
+                cfg.ReceiveEndpoint("payment-rollback", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Payment.Rollback>();
+                    
+                    e.Bind("exchange.payment-rollback", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.payment-rollback";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
                 
-                cfg.ReceiveEndpoint(settings.Endpoints.PaymentCancelled, e =>
+                cfg.ReceiveEndpoint("payment.cancelled", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Payment.Cancelled>();
+                    
+                    e.Bind("exchange.payment-cancelled", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.payment-cancelled";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
                 #endregion
 
                 #region Shipping
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingSubmitted, e =>
+                
+                cfg.ReceiveEndpoint("shipping.submitted", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Shipping.Submitted>();
+                    
+                    e.Bind("exchange.shipping-cancelled", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingAccepted, e =>
+                cfg.ReceiveEndpoint("shipping.accepted", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Shipping.Accepted>();
+                    
+                    e.Bind("exchange.shipping-cancelled", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingRollback, e =>
+                cfg.ReceiveEndpoint("shipping.rollback", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Shipping.Rollback>();
+                    
+                    e.Bind("exchange.shipping-cancelled", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
                 
-                cfg.ReceiveEndpoint(settings.Endpoints.ShippingCancelled, e =>
+                cfg.ReceiveEndpoint("shipping.cancelled", e =>
                 {
                     e.ExchangeType = ExchangeType.Direct;
-                    e.Bind<Shipping.Cancelled>();
+                    
+                    e.Bind("exchange.shipping-cancelled", bind =>
+                    {
+                        bind.ExchangeType = ExchangeType.Direct;
+                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                    });
+                    
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
+                
                 #endregion
             });
         });
