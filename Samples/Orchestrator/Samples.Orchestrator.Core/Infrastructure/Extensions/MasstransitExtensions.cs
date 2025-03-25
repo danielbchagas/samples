@@ -64,43 +64,37 @@ public static class MasstransitExtensions
                 });
                 
                 #region Payment
-                cfg.ReceiveEndpoint("payment-submitted", e =>
+                
+                cfg.ReceiveEndpoint("payment.submitted", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.payment-submitted", bind =>
+                    e.Bind("payment", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.payment-submitted";
+                        bind.RoutingKey = "payment.submitted";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint("payment-accepted", e =>
+                cfg.ReceiveEndpoint("payment.accepted", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.payment-accepted", bind =>
+                    e.Bind("payment", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.payment-accepted";
+                        bind.RoutingKey = "payment.accepted";
                     });
                     
-                    e.Bind<Payment.Accepted>();
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
 
-                cfg.ReceiveEndpoint("payment-rollback", e =>
+                cfg.ReceiveEndpoint("payment.rollback", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.payment-rollback", bind =>
+                    e.Bind("payment", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.payment-rollback";
+                        bind.RoutingKey = "payment.rollback";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
@@ -109,29 +103,26 @@ public static class MasstransitExtensions
                 
                 cfg.ReceiveEndpoint("payment.cancelled", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.payment-cancelled", bind =>
+                    e.Bind("payment", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.payment-cancelled";
+                        bind.RoutingKey = "payment.cancelled";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureSaga<OrderState>(context);
                 });
+                
                 #endregion
 
                 #region Shipping
                 
                 cfg.ReceiveEndpoint("shipping.submitted", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.shipping-cancelled", bind =>
+                    e.Bind("shipping", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                        bind.RoutingKey = "shipping.submitted";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
@@ -140,12 +131,10 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint("shipping.accepted", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.shipping-cancelled", bind =>
+                    e.Bind("shipping", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                        bind.RoutingKey = "shipping.accepted";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
@@ -154,12 +143,10 @@ public static class MasstransitExtensions
 
                 cfg.ReceiveEndpoint("shipping.rollback", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.shipping-cancelled", bind =>
+                    e.Bind("shipping", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                        bind.RoutingKey = "shipping.rollback";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
@@ -168,12 +155,10 @@ public static class MasstransitExtensions
                 
                 cfg.ReceiveEndpoint("shipping.cancelled", e =>
                 {
-                    e.ExchangeType = ExchangeType.Direct;
-                    
-                    e.Bind("exchange.shipping-cancelled", bind =>
+                    e.Bind("shipping", bind =>
                     {
                         bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "routing-key.shipping-cancelled";
+                        bind.RoutingKey = "shipping.cancelled";
                     });
                     
                     e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
