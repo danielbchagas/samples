@@ -51,6 +51,8 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         
         InstanceState(x => x.CurrentState);
 
+        #region Configure States
+
         Event(() => InitialEvent);
 
         Event(() => PaymentSubmittedEvent);
@@ -72,6 +74,10 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         State(() => ShippingAcceptedState);
         State(() => ShippingCancelledState);
         State(() => ShippingRollbackState);
+
+        #endregion
+        
+        #region State Machine
         
         Initially(
             When(InitialEvent)
@@ -124,12 +130,15 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(ShippingRollbackState)
         );
+        
+        #endregion
     }
     
-private static void LogMessage<T>(ILogger logger, T message)
-{
-    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(message));
-}
+    private static void LogMessage<T>(ILogger logger, T message)
+    {
+        logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(message));
+    }
+    
     private static BrokerSettings BuildSettings(IConfiguration configuration)
     {
         var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
