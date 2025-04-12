@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Bogus;
+using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
 using Microsoft.Extensions.Configuration;
@@ -28,19 +29,23 @@ public class OrderStateMachineTests
     private const string ShippingCancelled = "ShippingCancelled";
     private const string ShippingRollback = "ShippingRollback";
 
-    private static readonly JsonObject Payload = new()
-    {
-        ["OrderId"] = 1,
-        ["Amount"] = 100,
-        ["Currency"] = "USD",
-        ["PaymentMethod"] = "CreditCard"
-    };
+    private JsonObject Payload { get; }
 
     public OrderStateMachineTests()
     {
         Configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Test.json")
             .Build();
+
+        Payload = new Faker<JsonObject>()
+       .CustomInstantiator(f => new JsonObject
+       {
+           ["OrderId"] = f.Random.Int(1, 1000),
+           ["Amount"] = f.Finance.Amount(10, 5000),
+           ["Currency"] = f.Finance.Currency().Code,
+           ["PaymentMethod"] = f.PickRandom(new[] { "CreditCard", "PayPal", "BankTransfer" })
+       })
+       .Generate();
     }
         
     [Fact]
