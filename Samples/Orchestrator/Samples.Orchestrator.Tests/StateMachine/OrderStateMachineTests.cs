@@ -1,21 +1,22 @@
-﻿using System.Text.Json.Nodes;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MassTransit;
 using MassTransit.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
+using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
+using System.Text.Json.Nodes;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
-        
+
 namespace Samples.Orchestrator.Tests.StateMachine;
         
 public class OrderStateMachineTests
 {
     private IConfiguration Configuration;
-    
+
+    private const string InitialEvent = "Initial";
+
     private const string PaymentSubmitted = "PaymentSubmitted";
     private const string PaymentAccepted = "PaymentAccepted";
     private const string PaymentCancelled = "PaymentCancelled";
@@ -38,7 +39,7 @@ public class OrderStateMachineTests
     public OrderStateMachineTests()
     {
         Configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
+            .AddJsonFile("appsettings.Test.json")
             .Build();
     }
         
@@ -60,18 +61,20 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-            
+
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, CurrentState =  PaymentAccepted, Payload = Payload });
-                
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentAccepted);
-                
-        // Assert
+
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentAcceptedState);
+
+        //Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
-                
+
         await _harness.Stop();
     }
             
@@ -93,15 +96,17 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-                
+
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, CurrentState = PaymentCancelled, Payload = Payload });
                 
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelledState);
                 
         // Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Cancelled>().Any().Should().BeTrue();
                 
@@ -126,15 +131,17 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-                
+
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, CurrentState = PaymentRollback, Payload = Payload });
                 
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollbackState);
                 
         // Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Rollback>().Any().Should().BeTrue();
                 
@@ -159,17 +166,19 @@ public class OrderStateMachineTests
         await _harness.Start();
                 
         var sagaId = NewId.NextGuid();
-            
+
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, CurrentState = PaymentAccepted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, CurrentState =  ShippingSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, CurrentState =  ShippingAccepted, Payload = Payload });
                 
-        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingAccepted);
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingAcceptedState);
                 
         // Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Shipping.Submitted>().Any().Should().BeTrue();
@@ -198,16 +207,18 @@ public class OrderStateMachineTests
         var sagaId = NewId.NextGuid();
 
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Accepted {CorrelationId = sagaId, CurrentState =  PaymentAccepted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Submitted {CorrelationId = sagaId, CurrentState =  ShippingSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, CurrentState = ShippingCancelled, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, CurrentState = PaymentCancelled, Payload = Payload });
 
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelled);
+        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelledState);
 
         // Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Shipping.Submitted>().Any().Should().BeTrue();
@@ -234,18 +245,20 @@ public class OrderStateMachineTests
         await _harness.Start();
 
         var sagaId = NewId.NextGuid();
-        
+
         // Act
+        await _harness.Bus.Publish(new InitialEvent { CorrelationId = sagaId, CurrentState = InitialEvent, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Submitted { CorrelationId = sagaId, CurrentState = PaymentSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Accepted { CorrelationId = sagaId, CurrentState = PaymentAccepted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Submitted { CorrelationId = sagaId, CurrentState = ShippingSubmitted, Payload = Payload });
         await _harness.Bus.Publish(new Shipping.Rollback { CorrelationId = sagaId, CurrentState = ShippingRollback, Payload = Payload, });
         await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, CurrentState = PaymentRollback, Payload = Payload });
 
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollback);
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingRollbackState);
 
         // Assert
         instance.Should().NotBeNull();
+        sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Shipping.Submitted>().Any().Should().BeTrue();

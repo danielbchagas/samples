@@ -84,13 +84,16 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 
         );
 
-        During(PaymentSubmittedState,
+        During(InitialState,
             When(PaymentSubmittedEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentSubmittedState),
+                .TransitionTo(PaymentSubmittedState)
+        );
+
+        During(PaymentSubmittedState,
             When(PaymentAcceptedEvent)
                 .Then(context =>
                 {
@@ -111,7 +114,7 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
                 .TransitionTo(PaymentRollbackState)
-        );
+            );
         
         During(PaymentAcceptedState,
             When(ShippingSubmittedEvent)
