@@ -13,6 +13,8 @@ Samples.Orchestrator/
 │
 ├── Domain/
 │   └── Events/
+|       ├── Initial/
+|       ├   ├── Initial.cs
 │       ├── Payment/
 │       │   ├── Accepted.cs
 │       │   ├── Cancelled.cs
