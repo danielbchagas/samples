@@ -11,6 +11,9 @@ internal record BrokerSettings
 
 internal record Endpoints
 {
+    public required string ConsumerGroup { get; set; }
+
+    public required string Initial { get; set; }
     public required string PaymentSubmitted { get; set; }
     public required string PaymentAccepted { get; set; }
     public required string PaymentCancelled { get; set; }
