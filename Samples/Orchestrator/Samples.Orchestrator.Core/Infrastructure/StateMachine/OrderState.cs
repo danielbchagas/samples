@@ -12,7 +12,7 @@ public class OrderState : SagaStateMachineInstance
 
     public required JsonObject Payload { get; set; }
     public DateTime CreatedAt { get; set; }
-    
+
     public void Initialize<T>(T message) where T : SagaEvent
     {
         CorrelationId = message.CorrelationId;

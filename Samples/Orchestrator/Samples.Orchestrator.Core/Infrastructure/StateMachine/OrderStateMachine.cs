@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MassTransit;
+using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Domain.Settings;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
@@ -8,32 +9,40 @@ namespace Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
+    #region Initial Events
+    public State InitialState { get; private set; }
+    #endregion
+
     #region Payment States
-    public State PaymentSubmitted { get; private set; }
-    public State PaymentAccepted { get; private set; }
-    public State PaymentCancelled { get; private set; }
-    public State PaymentRollback { get; private set; }
+    public State PaymentSubmittedState { get; private set; }
+    public State PaymentAcceptedState { get; private set; }
+    public State PaymentCancelledState { get; private set; }
+    public State PaymentRollbackState { get; private set; }
     #endregion
 
     #region Shipping States
-    public State ShippingSubmitted { get; private set; }
-    public State ShippingAccepted { get; private set; }
-    public State ShippingCancelled { get; private set; }
-    public State ShippingRollback { get; private set; }
+    public State ShippingSubmittedState { get; private set; }
+    public State ShippingAcceptedState { get; private set; }
+    public State ShippingCancelledState { get; private set; }
+    public State ShippingRollbackState { get; private set; }
+    #endregion
+
+    #region
+    public Event<InitialEvent> InitialEvent { get; private set; }
     #endregion
 
     #region Payment Events
-    public Event<Payment.Submitted> PaymentSubmittedState { get; private set; }
-    public Event<Payment.Accepted> PaymentAcceptedState { get; private set; }
-    public Event<Payment.Cancelled> PaymentCancelledState { get; private set; }
-    public Event<Payment.Rollback> PaymentRollbackState { get; private set; }
+    public Event<Payment.Submitted> PaymentSubmittedEvent { get; private set; }
+    public Event<Payment.Accepted> PaymentAcceptedEvent { get; private set; }
+    public Event<Payment.Cancelled> PaymentCancelledEvent { get; private set; }
+    public Event<Payment.Rollback> PaymentRollbackEvent { get; private set; }
     #endregion
 
     #region Shipping Events
-    public Event<Shipping.Submitted> ShippingSubmittedState { get; private set; }
-    public Event<Shipping.Accepted> ShippingAcceptedState { get; private set; }
-    public Event<Shipping.Cancelled> ShippingCancelledState { get; private set; }
-    public Event<Shipping.Rollback> ShippingRollbackState { get; private set; }
+    public Event<Shipping.Submitted> ShippingSubmittedEvent { get; private set; }
+    public Event<Shipping.Accepted> ShippingAcceptedEvent { get; private set; }
+    public Event<Shipping.Cancelled> ShippingCancelledEvent { get; private set; }
+    public Event<Shipping.Rollback> ShippingRollbackEvent { get; private set; }
     #endregion
 
     public OrderStateMachine(ILogger<OrderStateMachine> logger, IConfiguration configuration)
@@ -42,95 +51,103 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         
         InstanceState(x => x.CurrentState);
 
-        Event(() => PaymentSubmittedState);
-        Event(() => PaymentAcceptedState);
-        Event(() => PaymentCancelledState);
-        Event(() => PaymentRollbackState);
+        Event(() => InitialEvent);
+
+        Event(() => PaymentSubmittedEvent);
+        Event(() => PaymentAcceptedEvent);
+        Event(() => PaymentCancelledEvent);
+        Event(() => PaymentRollbackEvent);
         
-        Event(() => ShippingSubmittedState);
-        Event(() => ShippingAcceptedState);
-        Event(() => ShippingCancelledState);
-        Event(() => ShippingRollbackState);
+        Event(() => ShippingSubmittedEvent);
+        Event(() => ShippingAcceptedEvent);
+        Event(() => ShippingCancelledEvent);
+        Event(() => ShippingRollbackEvent);
         
-        State(() => PaymentSubmitted);
-        State(() => PaymentAccepted);
-        State(() => PaymentCancelled);
-        State(() => PaymentRollback);
+        State(() => PaymentSubmittedState);
+        State(() => PaymentAcceptedState);
+        State(() => PaymentCancelledState);
+        State(() => PaymentRollbackState);
         
-        State(() => ShippingSubmitted);
-        State(() => ShippingAccepted);
-        State(() => ShippingCancelled);
-        State(() => ShippingRollback);
+        State(() => ShippingSubmittedState);
+        State(() => ShippingAcceptedState);
+        State(() => ShippingCancelledState);
+        State(() => ShippingRollbackState);
         
         Initially(
-            When(PaymentSubmittedState)
+            When(InitialEvent)
                 .Then(context =>
                 {
                     context.Saga.Initialize(context.Message);
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentSubmitted)
+                .TransitionTo(InitialState)
                 
         );
 
-        During(PaymentSubmitted,
-            When(PaymentAcceptedState)
+        During(PaymentSubmittedState,
+            When(PaymentSubmittedEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentAccepted),
+                .TransitionTo(PaymentSubmittedState),
+            When(PaymentAcceptedEvent)
+                .Then(context =>
+                {
+                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                })
+                .TransitionTo(PaymentAcceptedState),
 
-            When(PaymentCancelledState)
+            When(PaymentCancelledEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentCancelled),
+                .TransitionTo(PaymentCancelledState),
 
-            When(PaymentRollbackState)
+            When(PaymentRollbackEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentRollback)
+                .TransitionTo(PaymentRollbackState)
         );
         
-        During(PaymentAccepted,
-            When(ShippingSubmittedState)
+        During(PaymentAcceptedState,
+            When(ShippingSubmittedEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(ShippingSubmitted)
+                .TransitionTo(ShippingSubmittedState)
         );
 
-        During(ShippingSubmitted,
-            When(ShippingAcceptedState)
+        During(ShippingSubmittedState,
+            When(ShippingAcceptedEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(ShippingAccepted),
+                .TransitionTo(ShippingAcceptedState),
 
-            When(ShippingCancelledState)
+            When(ShippingCancelledEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(ShippingCancelled)
+                .TransitionTo(ShippingCancelledState)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(PaymentCancelled),
+                .TransitionTo(PaymentCancelledState),
 
-            When(ShippingRollbackState)
+            When(ShippingRollbackEvent)
                 .Then(context =>
                 {
                     logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
                 })
-                .TransitionTo(ShippingRollback)
+                .TransitionTo(ShippingRollbackState)
         );
 
         SetCompletedWhenFinalized();
@@ -148,7 +165,9 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         ArgumentException.ThrowIfNullOrEmpty(settings.Password);
         
         ArgumentNullException.ThrowIfNull(settings.Endpoints);
-        
+
+        ArgumentNullException.ThrowIfNull(settings.Endpoints.ConsumerGroup);
+
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentSubmitted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
