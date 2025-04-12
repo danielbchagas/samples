@@ -1,43 +1,58 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:latest
-    container_name: postgres_container
+  # Zookeeper (necessário para Kafka)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"         # Acesso local (host)
+      - "29092:29092"       # Acesso entre containers
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
     ports:
       - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq_container
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
-    ports:
-      - "5672:5672"   # Porta para o RabbitMQ
-      - "15672:15672" # Porta para o RabbitMQ Management UI
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: orchestrator_db
     volumes:
-      - rabbitmqdata:/var/lib/rabbitmq
-    command: |
-      sh -c "
-        rabbitmq-server &
-        sleep 10 &&
-        rabbitmqadmin declare queue name=saga.pagamento.iniciar durable=true &&
-        rabbitmqadmin declare queue name=saga.pagamento.confirmado durable=true &&
-        rabbitmqadmin declare queue name=saga.pagamento.cancelado durable=true &&
-        rabbitmqadmin declare queue name=saga.pagamento.rollback durable=true &&
-        rabbitmqadmin declare queue name=saga.envio.iniciar durable=true &&
-        rabbitmqadmin declare queue name=saga.envio.confirmado durable=true &&
-        rabbitmqadmin declare queue name=saga.envio.cancelado durable=true &&
-        rabbitmqadmin declare queue name=saga.envio.rollback durable=true &&
-        tail -f /dev/null
-      "
+      - postgres_data:/var/lib/postgresql/data
+
+  # Kafka UI (opcional)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
 volumes:
-  pgdata:
-  rabbitmqdata:
+  postgres_data:

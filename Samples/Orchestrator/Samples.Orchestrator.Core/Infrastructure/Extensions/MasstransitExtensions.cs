@@ -5,6 +5,7 @@ using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Domain.Settings;
 using Samples.Orchestrator.Core.Infrastructure.Database;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
+using System.Reflection;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -41,8 +42,8 @@ public static class MasstransitExtensions
                     {
                         builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), options =>
                         {
-                            // options.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
-                            // options.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
+                            options.MigrationsAssembly(Assembly.GetExecutingAssembly().GetName().Name);
+                            options.MigrationsHistoryTable($"__{nameof(OrderStateDbContext)}");
                             options.EnableRetryOnFailure();
                         });
                     });
@@ -55,8 +56,6 @@ public static class MasstransitExtensions
                 config.ConfigureEndpoints(context);
             });
 
-            cfg.AddSagaStateMachine<OrderStateMachine, OrderState>();
-
             cfg.AddRider(rider =>
             {
                 rider.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -66,7 +65,7 @@ public static class MasstransitExtensions
 
                 rider.UsingKafka((context, k) =>
                 {
-                    k.Host("localhost:9092");
+                    k.Host($"{kafkaSettings.Host}:{kafkaSettings.Port}");
 
                     k.TopicEndpoint<InitialEvent>(kafkaSettings.Endpoints.Initial, kafkaSettings.Endpoints.ConsumerGroup, e =>
                     {
