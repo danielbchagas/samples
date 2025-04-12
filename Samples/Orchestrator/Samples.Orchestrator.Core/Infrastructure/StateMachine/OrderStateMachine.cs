@@ -78,84 +78,58 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
                 .Then(context =>
                 {
                     context.Saga.Initialize(context.Message);
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
+                    LogMessage(logger, context.Message);
                 })
                 .TransitionTo(InitialState)
-                
         );
 
         During(InitialState,
             When(PaymentSubmittedEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(PaymentSubmittedState)
         );
 
         During(PaymentSubmittedState,
             When(PaymentAcceptedEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(PaymentAcceptedState),
 
             When(PaymentCancelledEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
-                .TransitionTo(PaymentCancelledState),
+                .Then(context => LogMessage(logger, context.Message))
+                .TransitionTo(PaymentCancelledState)
+                .Finalize(),
 
             When(PaymentRollbackEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(PaymentRollbackState)
-            );
-        
+                .Finalize()
+        );
+
         During(PaymentAcceptedState,
             When(ShippingSubmittedEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(ShippingSubmittedState)
         );
 
         During(ShippingSubmittedState,
             When(ShippingAcceptedEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(ShippingAcceptedState),
 
             When(ShippingCancelledEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
-                .TransitionTo(ShippingCancelledState)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
-                .TransitionTo(PaymentCancelledState),
+                .Then(context => LogMessage(logger, context.Message))
+                .TransitionTo(ShippingCancelledState),
 
             When(ShippingRollbackEvent)
-                .Then(context =>
-                {
-                    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(context.Message));
-                })
+                .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(ShippingRollbackState)
         );
-
-        SetCompletedWhenFinalized();
     }
     
+private static void LogMessage<T>(ILogger logger, T message)
+{
+    logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(message));
+}
     private static BrokerSettings BuildSettings(IConfiguration configuration)
     {
         var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
