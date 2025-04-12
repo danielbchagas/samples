@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
+using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Domain.Settings;
 using Samples.Orchestrator.Core.Infrastructure.Database;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
@@ -20,13 +20,16 @@ public static class MasstransitExtensions
 {
     public static IServiceCollection AddMasstransit(this IServiceCollection services, IConfiguration configuration)
     {
-        var settings = BuildConfig(configuration);
-        
         services.AddDbContext<DbContext, OrderStateDbContext>(opt =>
         {
-            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), options => options.EnableRetryOnFailure());
+            opt.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), options =>
+            {
+                options.EnableRetryOnFailure();
+            });
         });
-        
+
+        var kafkaSettings = BuildKafkaSettings(configuration);
+
         services.AddMassTransit(cfg =>
         {
             cfg.AddSagaStateMachine<OrderStateMachine, OrderState>()
@@ -46,133 +49,67 @@ public static class MasstransitExtensions
                     
                     r.UsePostgres();
                 });
-            
-            cfg.UsingRabbitMq((context, cfg) =>
+
+            cfg.UsingInMemory((context, config) =>
             {
-                cfg.Host(settings.Host, "/", h =>
-                {
-                    h.Username(settings.Username);
-                    h.Password(settings.Password);
-                });
-                
-                cfg.UseRawJsonDeserializer(isDefault: true);
-                
-                cfg.ConfigureJsonSerializerOptions(opts =>
-                {
-                    opts.PropertyNameCaseInsensitive = true;
-                    return opts;
-                });
-                
-                #region Payment
-                
-                cfg.ReceiveEndpoint("payment.submitted", e =>
-                {
-                    e.Bind("payment", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "payment.submitted";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+                config.ConfigureEndpoints(context);
+            });
 
-                cfg.ReceiveEndpoint("payment.accepted", e =>
-                {
-                    e.Bind("payment", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "payment.accepted";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+            cfg.AddSagaStateMachine<OrderStateMachine, OrderState>();
 
-                cfg.ReceiveEndpoint("payment.rollback", e =>
-                {
-                    e.Bind("payment", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "payment.rollback";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("payment.cancelled", e =>
-                {
-                    e.Bind("payment", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "payment.cancelled";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                #endregion
+            cfg.AddRider(rider =>
+            {
+                rider.AddSagaStateMachine<OrderStateMachine, OrderState>();
 
-                #region Shipping
-                
-                cfg.ReceiveEndpoint("shipping.submitted", e =>
-                {
-                    e.Bind("shipping", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "shipping.submitted";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+                rider.AddProducer<Payment.Submitted>(kafkaSettings.Endpoints.PaymentSubmitted);
+                rider.AddProducer<Shipping.Submitted>(kafkaSettings.Endpoints.ShippingSubmitted);
 
-                cfg.ReceiveEndpoint("shipping.accepted", e =>
+                rider.UsingKafka((context, k) =>
                 {
-                    e.Bind("shipping", bind =>
-                    {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "shipping.accepted";
-                    });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
+                    k.Host("localhost:9092");
 
-                cfg.ReceiveEndpoint("shipping.rollback", e =>
-                {
-                    e.Bind("shipping", bind =>
+                    k.TopicEndpoint<InitialEvent>(kafkaSettings.Endpoints.Initial, kafkaSettings.Endpoints.ConsumerGroup, e =>
                     {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "shipping.rollback";
+                        e.ConfigureSaga<OrderState>(context);
                     });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
-                });
-                
-                cfg.ReceiveEndpoint("shipping.cancelled", e =>
-                {
-                    e.Bind("shipping", bind =>
+
+                    k.TopicEndpoint<Payment.Accepted>(kafkaSettings.Endpoints.PaymentAccepted, kafkaSettings.Endpoints.ConsumerGroup, e =>
                     {
-                        bind.ExchangeType = ExchangeType.Direct;
-                        bind.RoutingKey = "shipping.cancelled";
+                        e.ConfigureSaga<OrderState>(context);
                     });
-                    
-                    e.UseMessageRetry(retryConfig => retryConfig.Interval(3, TimeSpan.FromSeconds(5)));
-                    e.ConfigureSaga<OrderState>(context);
+
+                    k.TopicEndpoint<Payment.Cancelled>(kafkaSettings.Endpoints.PaymentCancelled, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Payment.Rollback>(kafkaSettings.Endpoints.PaymentRollback, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Shipping.Accepted>(kafkaSettings.Endpoints.ShippingAccepted, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Shipping.Cancelled>(kafkaSettings.Endpoints.ShippingCancelled, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+
+                    k.TopicEndpoint<Shipping.Rollback>(kafkaSettings.Endpoints.ShippingRollback, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
                 });
-                
-                #endregion
             });
         });
             
         return services;
     }
     
-    private static BrokerSettings BuildConfig(IConfiguration configuration)
+    private static BrokerSettings BuildKafkaSettings(IConfiguration configuration)
     {
         var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
         
@@ -184,7 +121,10 @@ public static class MasstransitExtensions
         ArgumentException.ThrowIfNullOrEmpty(settings.Password);
         
         ArgumentNullException.ThrowIfNull(settings.Endpoints);
-        
+
+        ArgumentNullException.ThrowIfNull(settings.Endpoints.ConsumerGroup);
+
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.Initial);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentSubmitted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
