@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using BenchmarkDotNet.Running;
-using Benchmarks.Http.Clients;
+using Samples.Benchmarks.Http.Clients;
 
 internal class Program
 {

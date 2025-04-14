@@ -37,5 +37,5 @@ Antes de começar, certifique-se de que você possui os seguintes itens instalad
 Para executar o projeto **Benchmarks**, utilize o seguinte comando:
 
 ```sh
-dotnet run --project src/Benchmarks.Http/Benchmarks.Http.csproj -c Release
+dotnet run --project Benchmarks\Samples.Benchmarks\Samples.Benchmarks.Http.csproj -c Release
 ```

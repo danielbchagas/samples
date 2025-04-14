@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
-namespace Benchmarks.Http.Clients;
+namespace Samples.Benchmarks.Http.Clients;
 
 public class Native
 {
