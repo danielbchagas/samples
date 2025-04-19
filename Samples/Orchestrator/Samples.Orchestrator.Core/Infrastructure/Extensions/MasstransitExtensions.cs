@@ -72,6 +72,11 @@ public static class MasstransitExtensions
                         e.ConfigureSaga<OrderState>(context);
                     });
 
+                    k.TopicEndpoint<Payment.Accepted>(kafkaSettings.Endpoints.PaymentSubmitted, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+                    
                     k.TopicEndpoint<Payment.Accepted>(kafkaSettings.Endpoints.PaymentAccepted, kafkaSettings.Endpoints.ConsumerGroup, e =>
                     {
                         e.ConfigureSaga<OrderState>(context);
@@ -83,6 +88,11 @@ public static class MasstransitExtensions
                     });
 
                     k.TopicEndpoint<Payment.Rollback>(kafkaSettings.Endpoints.PaymentRollback, kafkaSettings.Endpoints.ConsumerGroup, e =>
+                    {
+                        e.ConfigureSaga<OrderState>(context);
+                    });
+                    
+                    k.TopicEndpoint<Shipping.Accepted>(kafkaSettings.Endpoints.ShippingSubmitted, kafkaSettings.Endpoints.ConsumerGroup, e =>
                     {
                         e.ConfigureSaga<OrderState>(context);
                     });

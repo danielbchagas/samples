@@ -102,13 +102,11 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
             When(PaymentCancelledEvent)
                 .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(PaymentCancelledState)
-                .Finalize(),
+                .TransitionTo(PaymentCancelledState),
 
             When(PaymentRollbackEvent)
                 .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(PaymentRollbackState)
-                .Finalize()
         );
 
         During(PaymentAcceptedState,
