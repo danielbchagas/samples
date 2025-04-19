@@ -1,6 +1,6 @@
 ﻿namespace Samples.Orchestrator.Core.Domain.Settings;
 
-internal record BrokerSettings
+public record BrokerSettings
 {
     public required string Host { get; set; }
     public required string Port { get; set; }
@@ -9,7 +9,7 @@ internal record BrokerSettings
     public required Endpoints Endpoints { get; set; }
 }
 
-internal record Endpoints
+public record Endpoints
 {
     public required string ConsumerGroup { get; set; }
 

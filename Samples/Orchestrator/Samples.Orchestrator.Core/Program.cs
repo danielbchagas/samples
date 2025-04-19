@@ -12,6 +12,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddMasstransit(builder.Configuration);
 builder.Services.AddEntityFramework(builder.Configuration);
+builder.Services.AddBDependencyInjection(builder.Configuration);
 
 var app = builder.Build();
 

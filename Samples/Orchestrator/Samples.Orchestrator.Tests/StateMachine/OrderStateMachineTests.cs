@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Infrastructure.StateMachine;
 using System.Text.Json.Nodes;
+using Moq;
+using Samples.Orchestrator.Core.Infrastructure.Factories;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -15,6 +17,7 @@ namespace Samples.Orchestrator.Tests.StateMachine;
 public class OrderStateMachineTests
 {
     private IConfiguration Configuration;
+    private Mock<IBrokerSettingsFactory> BrokerSettingsFactory;
 
     private const string InitialEvent = "Initial";
 
@@ -35,6 +38,8 @@ public class OrderStateMachineTests
         Configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Test.json")
             .Build();
+        
+        BrokerSettingsFactory = new Mock<IBrokerSettingsFactory>();
 
         Payload = new Faker<JsonObject>()
        .CustomInstantiator(f => new JsonObject
@@ -53,6 +58,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -88,6 +94,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -123,6 +130,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -158,6 +166,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -197,6 +206,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();
@@ -237,6 +247,7 @@ public class OrderStateMachineTests
         // Arrange
         await using var provider = new ServiceCollection()
             .AddSingleton(Configuration)
+            .AddSingleton(BrokerSettingsFactory.Object)
             .AddMassTransitTestHarness(config =>
             {
                 config.AddSagaStateMachine<OrderStateMachine, OrderState>();

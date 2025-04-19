@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using MassTransit;
 using Samples.Orchestrator.Core.Domain.Events.Start;
-using Samples.Orchestrator.Core.Domain.Settings;
+using Samples.Orchestrator.Core.Infrastructure.Factories;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
 using Shipping = Samples.Orchestrator.Core.Domain.Events.Shipping;
 
@@ -45,9 +45,9 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     public Event<Shipping.Rollback> ShippingRollbackEvent { get; private set; }
     #endregion
 
-    public OrderStateMachine(ILogger<OrderStateMachine> logger, IConfiguration configuration)
+    public OrderStateMachine(ILogger<OrderStateMachine> logger, IConfiguration configuration, IBrokerSettingsFactory brokerSettingsFactory)
     {
-        var settings = BuildSettings(configuration);
+        var settings = brokerSettingsFactory.Create(configuration);
         
         InstanceState(x => x.CurrentState);
 
@@ -135,35 +135,5 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
     private static void LogMessage<T>(ILogger logger, T message)
     {
         logger.LogInformation("Message: {Message} processed", JsonSerializer.Serialize(message));
-    }
-    
-    private static BrokerSettings BuildSettings(IConfiguration configuration)
-    {
-        var settings = configuration.GetSection("Broker").Get<BrokerSettings>();
-        
-        ArgumentNullException.ThrowIfNull(settings);
-        
-        ArgumentException.ThrowIfNullOrEmpty(settings.Host);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Port);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Username);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Password);
-        
-        ArgumentNullException.ThrowIfNull(settings.Endpoints);
-
-        ArgumentNullException.ThrowIfNull(settings.Endpoints.ConsumerGroup);
-
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentSubmitted);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentRollback);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentProcessing);
-        
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingSubmitted);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingAccepted);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingCancelled);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingRollback);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingProcessing);
-        
-        return settings;
     }
 }
