@@ -22,7 +22,6 @@ public class OrderStateMachineTests
     private const string PaymentAccepted = "PaymentAccepted";
     private const string PaymentCancelled = "PaymentCancelled";
     private const string PaymentRollback = "PaymentRollback";
-    private const string PaymentProcessing = "PaymentProcessing";
     
     private const string ShippingSubmitted = "ShippingSubmitted";
     private const string ShippingAccepted = "ShippingAccepted";
@@ -219,7 +218,7 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Shipping.Cancelled { CorrelationId = sagaId, CurrentState = ShippingCancelled, Payload = Payload });
         await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, CurrentState = PaymentCancelled, Payload = Payload });
 
-        var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelledState);
+        var instance = await sagaHarness.Exists(sagaId, x => x.ShippingCancelledState);
 
         // Assert
         instance.Should().NotBeNull();
