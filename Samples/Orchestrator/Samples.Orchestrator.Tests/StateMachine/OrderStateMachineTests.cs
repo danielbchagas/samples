@@ -81,6 +81,9 @@ public class OrderStateMachineTests
 
         //Assert
         instance.Should().NotBeNull();
+        var saga = sagaHarness.Sagas.Contains(instance.Value);
+        saga.Should().NotBeNull();
+        saga!.CurrentState.Should().Be(PaymentAccepted);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
@@ -114,9 +117,12 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Cancelled { CorrelationId = sagaId, CurrentState = PaymentCancelled, Payload = Payload });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentCancelledState);
-                
+
         // Assert
         instance.Should().NotBeNull();
+        var sagaCancelled = sagaHarness.Sagas.Contains(instance.Value);
+        sagaCancelled.Should().NotBeNull();
+        sagaCancelled!.CurrentState.Should().Be(PaymentCancelled);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Cancelled>().Any().Should().BeTrue();
@@ -150,9 +156,12 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Payment.Rollback { CorrelationId = sagaId, CurrentState = PaymentRollback, Payload = Payload });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.PaymentRollbackState);
-                
+
         // Assert
         instance.Should().NotBeNull();
+        var sagaRollback = sagaHarness.Sagas.Contains(instance.Value);
+        sagaRollback.Should().NotBeNull();
+        sagaRollback!.CurrentState.Should().Be(PaymentRollback);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Rollback>().Any().Should().BeTrue();
@@ -188,9 +197,12 @@ public class OrderStateMachineTests
         await _harness.Bus.Publish(new Shipping.Accepted { CorrelationId = sagaId, CurrentState =  ShippingAccepted, Payload = Payload });
                 
         var instance = await sagaHarness.Exists(sagaId, x => x.ShippingAcceptedState);
-                
+
         // Assert
         instance.Should().NotBeNull();
+        var sagaShippingAccepted = sagaHarness.Sagas.Contains(instance.Value);
+        sagaShippingAccepted.Should().NotBeNull();
+        sagaShippingAccepted!.CurrentState.Should().Be(ShippingAccepted);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
@@ -232,6 +244,9 @@ public class OrderStateMachineTests
 
         // Assert
         instance.Should().NotBeNull();
+        var sagaShippingCancelled = sagaHarness.Sagas.Contains(instance.Value);
+        sagaShippingCancelled.Should().NotBeNull();
+        sagaShippingCancelled!.CurrentState.Should().Be(ShippingCancelled);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
@@ -273,6 +288,9 @@ public class OrderStateMachineTests
 
         // Assert
         instance.Should().NotBeNull();
+        var sagaShippingRollback = sagaHarness.Sagas.Contains(instance.Value);
+        sagaShippingRollback.Should().NotBeNull();
+        sagaShippingRollback!.CurrentState.Should().Be(ShippingRollback);
         sagaHarness.Consumed.Select<InitialEvent>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Submitted>().Any().Should().BeTrue();
         sagaHarness.Consumed.Select<Payment.Accepted>().Any().Should().BeTrue();
