@@ -50,3 +50,15 @@ Samples.Orchestrator/
 ├── Program.cs
 ├── Samples.Orchestrator.http
 └── Properties/
+
+## Estados do Fluxo
+
+A máquina de estados trabalha com os seguintes passos:
+
+- `payment-submitted`
+- `payment-accepted`
+- `payment-cancelled`
+- `payment-rollback`
+- `shipping-submitted`
+- `shipping-accepted`
+
