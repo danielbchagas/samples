@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MassTransit;
+using Samples.Orchestrator.Core.Domain.Events.Final;
 using Samples.Orchestrator.Core.Domain.Events.Start;
 using Samples.Orchestrator.Core.Infrastructure.Factories;
 using Payment = Samples.Orchestrator.Core.Domain.Events.Payment;
@@ -9,40 +10,36 @@ namespace Samples.Orchestrator.Core.Infrastructure.StateMachine;
 
 public class OrderStateMachine : MassTransitStateMachine<OrderState>
 {
-    #region Initial Events
+    #region States
     public State InitialState { get; private set; }
-    #endregion
 
-    #region Payment States
     public State PaymentSubmittedState { get; private set; }
     public State PaymentAcceptedState { get; private set; }
     public State PaymentCancelledState { get; private set; }
-    public State PaymentRollbackState { get; private set; }
-    #endregion
+    public State PaymentDeadLetterState { get; private set; }
 
-    #region Shipping States
     public State ShippingSubmittedState { get; private set; }
     public State ShippingAcceptedState { get; private set; }
     public State ShippingCancelledState { get; private set; }
-    public State ShippingRollbackState { get; private set; }
+    public State ShippingDeadLetterState { get; private set; }
+
+    public State FinalState { get; private set; }
     #endregion
 
-    #region
+    #region Events
     public Event<InitialEvent> InitialEvent { get; private set; }
-    #endregion
 
-    #region Payment Events
     public Event<Payment.Submitted> PaymentSubmittedEvent { get; private set; }
     public Event<Payment.Accepted> PaymentAcceptedEvent { get; private set; }
     public Event<Payment.Cancelled> PaymentCancelledEvent { get; private set; }
-    public Event<Payment.Rollback> PaymentRollbackEvent { get; private set; }
-    #endregion
+    public Event<Payment.DeadLetter> PaymentDeadLetterEvent { get; private set; }
 
-    #region Shipping Events
     public Event<Shipping.Submitted> ShippingSubmittedEvent { get; private set; }
     public Event<Shipping.Accepted> ShippingAcceptedEvent { get; private set; }
     public Event<Shipping.Cancelled> ShippingCancelledEvent { get; private set; }
-    public Event<Shipping.Rollback> ShippingRollbackEvent { get; private set; }
+    public Event<Shipping.DeadLetter> ShippingDeadLetterEvent { get; private set; }
+
+    public Event<FinalEvent> FinalEvent { get; private set; }
     #endregion
 
     public OrderStateMachine(ILogger<OrderStateMachine> logger, IConfiguration configuration, IBrokerSettingsFactory brokerSettingsFactory)
@@ -51,34 +48,44 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         
         InstanceState(x => x.CurrentState);
 
-        #region Configure States
+        #region Configure Events
 
         Event(() => InitialEvent);
 
         Event(() => PaymentSubmittedEvent);
         Event(() => PaymentAcceptedEvent);
         Event(() => PaymentCancelledEvent);
-        Event(() => PaymentRollbackEvent);
+        Event(() => PaymentDeadLetterEvent);
         
         Event(() => ShippingSubmittedEvent);
         Event(() => ShippingAcceptedEvent);
         Event(() => ShippingCancelledEvent);
-        Event(() => ShippingRollbackEvent);
-        
+        Event(() => ShippingDeadLetterEvent);
+
+        Event(() => FinalEvent);
+
+        #endregion
+
+        #region Configure States
+
+        State(() => InitialState);
+
         State(() => PaymentSubmittedState);
         State(() => PaymentAcceptedState);
         State(() => PaymentCancelledState);
-        State(() => PaymentRollbackState);
-        
+        State(() => PaymentDeadLetterState);
+
         State(() => ShippingSubmittedState);
         State(() => ShippingAcceptedState);
         State(() => ShippingCancelledState);
-        State(() => ShippingRollbackState);
+        State(() => ShippingDeadLetterState);
+
+        State(() => FinalState);
 
         #endregion
-        
+
         #region State Machine
-        
+
         Initially(
             When(InitialEvent)
                 .Then(context =>
@@ -91,6 +98,39 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
         During(InitialState,
             When(PaymentSubmittedEvent)
+                .IfElse(x => x.Saga.RetryCount > 3, thenCallback =>
+                {
+                    thenCallback.PublishAsync(async context =>
+                    {
+                        await context.Init<Payment.DeadLetter>(new
+                        {
+                            context.CorrelationId,
+                            context.Message.CurrentState,
+                            context.Saga.RetryCount,
+                            context.Message.Payload,
+                            context.Message.CreatedAt
+                        });
+                        
+                        return context;
+                    });
+                    
+                    return thenCallback;
+                }, elseCallback =>
+                {
+                    elseCallback.PublishAsync(async context =>
+                    {
+                        await context.Init<Payment.Submitted>(new
+                        {
+                            context.CorrelationId,
+                            context.Message.CurrentState,
+                            context.Message.Payload,
+                            context.Message.CreatedAt
+                        });
+                        
+                        return context;
+                    });
+                    return elseCallback;
+                })
                 .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(PaymentSubmittedState)
         );
@@ -102,15 +142,44 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
 
             When(PaymentCancelledEvent)
                 .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(PaymentCancelledState),
-
-            When(PaymentRollbackEvent)
-                .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(PaymentRollbackState)
+                .TransitionTo(PaymentCancelledState)
         );
 
         During(PaymentAcceptedState,
             When(ShippingSubmittedEvent)
+                .IfElse(x => x.Saga.RetryCount > 3, thenCallback =>
+                {
+                    thenCallback.PublishAsync(async context =>
+                    {
+                        await context.Init<Shipping.DeadLetter>(new
+                        {
+                            context.CorrelationId,
+                            context.Message.CurrentState,
+                            context.Saga.RetryCount,
+                            context.Message.Payload,
+                            context.Message.CreatedAt
+                        });
+                        
+                        return context;
+                    });
+                    
+                    return thenCallback;
+                }, elseCallback =>
+                {
+                    elseCallback.PublishAsync(async context =>
+                    {
+                        await context.Init<Shipping.Submitted>(new
+                        {
+                            context.CorrelationId,
+                            context.Message.CurrentState,
+                            context.Message.Payload,
+                            context.Message.CreatedAt
+                        });
+                        
+                        return context;
+                    });
+                    return elseCallback;
+                })
                 .Then(context => LogMessage(logger, context.Message))
                 .TransitionTo(ShippingSubmittedState)
         );
@@ -118,15 +187,24 @@ public class OrderStateMachine : MassTransitStateMachine<OrderState>
         During(ShippingSubmittedState,
             When(ShippingAcceptedEvent)
                 .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(ShippingAcceptedState),
+                .TransitionTo(ShippingAcceptedState)
+                .PublishAsync(async context =>
+                {
+                    await context.Init<FinalEvent>(new
+                    {
+                        context.CorrelationId,
+                        context.Message.CurrentState,
+                        context.Message.Payload,
+                        context.Message.CreatedAt
+                    });
+                    
+                    return context;
+                })
+                .TransitionTo(FinalState),
 
             When(ShippingCancelledEvent)
                 .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(ShippingCancelledState),
-
-            When(ShippingRollbackEvent)
-                .Then(context => LogMessage(logger, context.Message))
-                .TransitionTo(ShippingRollbackState)
+                .TransitionTo(ShippingCancelledState)
         );
         
         #endregion

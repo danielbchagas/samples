@@ -9,7 +9,7 @@ public class OrderState : SagaStateMachineInstance
 {
     public Guid CorrelationId { get; set; }
     public required string CurrentState { get; set; }
-
+    public int RetryCount { get; set; } = 0;
     public required JsonObject Payload { get; set; }
     public DateTime CreatedAt { get; set; }
 

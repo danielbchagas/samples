@@ -33,13 +33,11 @@ public class BrokerSettingsFactory : IBrokerSettingsFactory
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentSubmitted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentCancelled);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentRollback);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentProcessing);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.PaymentDeadLetter);
         
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingSubmitted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingAccepted);
         ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingCancelled);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingRollback);
-        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingProcessing);
+        ArgumentException.ThrowIfNullOrEmpty(settings.Endpoints.ShippingDeadLetter);
     }
 }
